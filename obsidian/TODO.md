@@ -1,0 +1,12 @@
+- [x] przejrzeć wszystkie pozostałe źródła w dokumencie
+- [x] poszukać nowych źródeł, skupić się na nie-chińskich i nie-hinduskich źródłach
+- [x] dodać nowe źródła do obsidiana
+- [x] skupić się na przeczytaniu całych artykułów:
+	- [x] HiFi-GAN
+	- [x] Diffusion
+- [x] określić zakres problemu - co chcę robić
+	- [ ] model AI GAN - 2 ai które konkurują ze sobą podczas nauki poprawy jakości audio
+	- [ ] opcja loss function - ilość szumów? nie wiem czy to ma sens ale ktoś tak robił w źródłach
+- [x] wybrać technologię - python czy rust?
+	- [ ] decyzja - python + Keras/PyTorch
+- [ ] ...

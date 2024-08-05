@@ -1,0 +1,180 @@
+{
+  "main": {
+    "id": "d1b7d75270eb3392",
+    "type": "split",
+    "children": [
+      {
+        "id": "53cc9127f24d9176",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "efbadaa5e7917783",
+            "type": "leaf",
+            "state": {
+              "type": "pdf",
+              "state": {
+                "file": "obsidian/sources/content/Stochastic Restoration of Heavily Compressed Musical Audio Using Generative Adversarial Networks.pdf"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "ea0951ce84e1e1f2",
+    "type": "split",
+    "children": [
+      {
+        "id": "6124c9f6a1296ee1",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "c4e822ebc1d48c01",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "0058b726bd374cdc",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "740d88d88f156e52",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {}
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "de5b954aede79966",
+    "type": "split",
+    "children": [
+      {
+        "id": "121453b5103e59cb",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "77e55abee31817e7",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "obsidian/sources/content/Stochastic Restoration of Heavily Compressed Musical Audio Using Generative Adversarial Networks.pdf",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "6c1cfb86776729a4",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "obsidian/sources/content/Stochastic Restoration of Heavily Compressed Musical Audio Using Generative Adversarial Networks.pdf",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "d0d065ff7735ce00",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true
+              }
+            }
+          },
+          {
+            "id": "9a770e670da9770c",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "obsidian/sources/content/Stochastic Restoration of Heavily Compressed Musical Audio Using Generative Adversarial Networks.pdf"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false
+    }
+  },
+  "active": "efbadaa5e7917783",
+  "lastOpenFiles": [
+    "data/musicnet_midis/musicnet_midis/Schubert/1776_sy_sps22.mid",
+    "data/musicnet_midis/musicnet_midis/Schubert/1777_sy_sps23.mid",
+    "data/musicnet_midis/musicnet_midis/Schubert/1775_sy_sps21.mid",
+    "data/musicnet_midis/musicnet_midis/Schubert/1773_sy_sps43.mid",
+    "data/musicnet_midis/musicnet_midis/Schubert/1772_sy_sps42.mid",
+    "data/musicnet_midis/musicnet_midis/Schubert/1771_sy_sps41.mid",
+    "data/musicnet_midis/musicnet_midis/Schubert/1768_sy_sps32.mid",
+    "data/musicnet_midis/musicnet_midis/Schubert/1766_scbt1424.mid",
+    "data/musicnet_midis/musicnet_midis/Schubert/1765_scbt1423.mid",
+    "data/musicnet_midis/musicnet_midis/Schubert/1764_scbt1422.mid",
+    "data/musicnet_midis/musicnet_midis/Schubert/1763_scbt1421.mid",
+    "obsidian/sources/content/Restoring and reconstructing old and damaged compositions using AI to preserve the musical heritage.md",
+    "obsidian/sources/content/Pasted image 20240412041233.png",
+    "obsidian/Harmonogram.md",
+    "obsidian/TODO.md",
+    "obsidian/Praca Magisterska.md",
+    "obsidian/sources/13. Diffusion Models for Audio Restoration.md",
+    "obsidian/sources/12. MACHINE LEARNING APPROACHES TO HISTORIC MUSIC RESTORATION.md",
+    "obsidian/sources/11. Stochastic Restoration of Heavily Compressed Musical Audio Using Generative Adversarial Networks.md",
+    "obsidian/sources/5. Active Restoration of Lost Audio Signals using Machine Learning and Latent Information.md",
+    "obsidian/sources/1. Projekt i implementacja wybranych algorytmów sztucznej inteligencji w procesie rekonstrukcji nagrań fonicznych.md",
+    "obsidian/sources/4. Machine Learning - Challenges, Limitations, and Compatibility for Audio Restoration Processes.md",
+    "obsidian/sources/3. Restoring and reconstructing old and damaged compositions using AI to preserve the musical heritage.md",
+    "obsidian/sources/10. Music Super-resolution with Spectral Flatness Loss and HiFi-GAN Discriminators.md",
+    "obsidian/sources/9. BEHM-GAN - Bandwidth Extension of Historical Music Using Generative Adversarial Networks.md",
+    "obsidian/sources/8. Super-Resolution for Music Signals Using Generative Adversarial Networks.md",
+    "obsidian/sources/7. Research on Objective Evaluation of Recording Audio Restoration Based on Deep Learning Network.md",
+    "obsidian/sources/6. A deep learning framework for audio restoration using Convolutional, Deconvolutional Deep Autoencoders.md",
+    "obsidian/Pasted image 20240528131109.png",
+    "obsidian/Pasted image 20240528131106.png"
+  ]
+}

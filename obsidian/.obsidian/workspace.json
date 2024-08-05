@@ -49,14 +49,26 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "sources/9. BEHM-GAN - Bandwidth Extension of Historical Music Using Generative Adversarial Networks.md",
+                "file": "Praca Magisterska.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "a1ac0a9ca4117af5",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Praca Magisterska.md",
                 "mode": "source",
                 "source": false
               }
             }
           }
         ],
-        "currentTab": 3
+        "currentTab": 4
       },
       {
         "id": "80c6f4c8db75de1a",
@@ -101,7 +113,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "",
+                "query": "U-",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -138,7 +150,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "sources/4. Machine Learning - Challenges, Limitations, and Compatibility for Audio Restoration Processes.md",
+                "file": "Praca Magisterska.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -155,7 +167,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "sources/4. Machine Learning - Challenges, Limitations, and Compatibility for Audio Restoration Processes.md",
+                "file": "Praca Magisterska.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -178,7 +190,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "sources/4. Machine Learning - Challenges, Limitations, and Compatibility for Audio Restoration Processes.md"
+                "file": "Praca Magisterska.md"
               }
             }
           }
@@ -201,26 +213,28 @@
   },
   "active": "3b6c39ee3ea0bfee",
   "lastOpenFiles": [
-    "sources/content/BEHM-GAN - Bandwidth Extension of Historical Music Using Generative Adversarial Networks.pdf",
-    "sources/9. BEHM-GAN - Bandwidth Extension of Historical Music Using Generative Adversarial Networks.md",
-    "sources/content/Pasted image 20240412041233.png",
-    "sources/8. Super-Resolution for Music Signals Using Generative Adversarial Networks.md",
+    "sources/3. Restoring and reconstructing old and damaged compositions using AI to preserve the musical heritage.md",
+    "sources/content/Restoring and reconstructing old and damaged compositions using AI to preserve the musical heritage.md",
+    "sources/5. Active Restoration of Lost Audio Signals using Machine Learning and Latent Information.md",
+    "Pasted image 20240528131109.png",
+    "Pasted image 20240528131106.png",
+    "sources/6. A deep learning framework for audio restoration using Convolutional, Deconvolutional Deep Autoencoders.md",
     "sources/7. Research on Objective Evaluation of Recording Audio Restoration Based on Deep Learning Network.md",
+    "sources/8. Super-Resolution for Music Signals Using Generative Adversarial Networks.md",
+    "sources/9. BEHM-GAN - Bandwidth Extension of Historical Music Using Generative Adversarial Networks.md",
+    "sources/4. Machine Learning - Challenges, Limitations, and Compatibility for Audio Restoration Processes.md",
+    "sources/content/Machine Learning - Challenges, Limitations, and Compatibility for Audio Restoration Processes.pdf",
+    "sources/1. Projekt i implementacja wybranych algorytmów sztucznej inteligencji w procesie rekonstrukcji nagrań fonicznych.md",
+    "sources/content/BEHM-GAN - Bandwidth Extension of Historical Music Using Generative Adversarial Networks.pdf",
+    "sources/content/Pasted image 20240412041233.png",
     "sources/content/Super-Resolution for Music Signals Using Generative Adversarial Networks.pdf",
     "sources/BEHM-GAN_Bandwidth_Extension_of_Historical_Music_Using_Generative_Adversarial_Networks.pdf.crdownload",
     "sources/content/Research on Objective Evaluation of Recording Audio Restoration Based on Deep Learning Network.pdf",
     "sources/Super-Resolution_for_Music_Signals_Using_Generative_Adversarial_Networks.pdf.crdownload",
-    "sources/content/Restoring and reconstructing old and damaged compositions using AI to preserve the musical heritage.md",
     "sources/content/A deep learning framework for audio restoration using Convolutional, Deconvolutional Deep Autoencoders.pdf",
-    "sources/6. A deep learning framework for audio restoration using Convolutional, Deconvolutional Deep Autoencoders.md",
     "sources/3748141.pdf.crdownload",
-    "sources/4. Machine Learning - Challenges, Limitations, and Compatibility for Audio Restoration Processes.md",
-    "Welcome.md",
+    "Praca Magisterska.md",
     "Untitled",
-    "sources/5. Active Restoration of Lost Audio Signals using Machine Learning and Latent Information.md",
-    "sources/content/Active Restoration of Lost Audio Signals using Machine Learning and Latent Information.pdf",
-    "sources/content",
-    "sources/3. Restoring and reconstructing old and damaged compositions using AI to preserve the musical heritage.md",
-    "sources/1. Projekt i implementacja wybranych algorytmów sztucznej inteligencji w procesie rekonstrukcji nagrań fonicznych.md"
+    "sources/content/Active Restoration of Lost Audio Signals using Machine Learning and Latent Information.pdf"
   ]
 }
