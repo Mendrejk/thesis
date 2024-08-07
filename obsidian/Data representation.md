@@ -1,0 +1,8 @@
+
+[[Stochastic Restoration of Heavily Compressed Musical Audio Using Generative Adversarial Networks.pdf]]
+
+3.3.1. Data Representation The main representation used in the proposed method are the complex **STFT components of the audio data hj,k ∈ CJK, as it has been shown that this representation works well for audio generation with GANs i**n [67 ]. The STFT is computed with a window size of 2048, and a hop size of 512. In addition, we perform non-linear scaling to all com- plex components, in order to obtain a scaling which is closer to human perception than when using the STFT components directly. That is, we transform each complex STFT coefficient hj,k = aj,k + i bj,k by taking the signed square-root of each of its components hσ j,k = σ(aj,k) + i σ(bj,k), where the signed square-root is defined as σ(r) = sign(r) √ |r| 
+
+[[Super-Resolution for Music Signals Using Generative Adversarial Networks.pdf]]
+
+Fig. 1 shows the complete process of audio super resolution processing. First, the signal is transformed into the log-power spectrogram and the phase spectrum through **STFT**. Second, the low-frequency and high-frequency parts are separated. In this procedure, the low-frequency log-power spectrogram is sent into the GAN network to obtain the high frequency parts, and the low frequency phase spectrum is flipped to obtain the high frequency parts. Finally, Inverse Short-Time Fourier Transform (ISTFT) is used to reconstruct the signal[11].

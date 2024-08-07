@@ -9,4 +9,6 @@
 	- [ ] opcja loss function - ilość szumów? nie wiem czy to ma sens ale ktoś tak robił w źródłach
 - [x] wybrać technologię - python czy rust?
 	- [ ] decyzja - python + Keras/PyTorch
-- [ ] ...
+- [ ] przygotowanie danych
+	- [x] dobór pogorszenia - szumy, kompresja
+	- [ ] wygenerowanie wizualizacji utworów z użyciem [STFT](https://en.wikipedia.org/wiki/Short-time_Fourier_transform)

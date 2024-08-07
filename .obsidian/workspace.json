@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "53cc9127f24d9176",
+        "id": "38d917ddecb51e3e",
         "type": "tabs",
         "children": [
           {
-            "id": "efbadaa5e7917783",
+            "id": "f36134f60e2c68da",
             "type": "leaf",
             "state": {
               "type": "pdf",
@@ -144,23 +144,25 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "efbadaa5e7917783",
+  "active": "f36134f60e2c68da",
   "lastOpenFiles": [
-    "data/converted",
-    "src/data-preparation/convert_to_mp3.py",
-    "src/data-preparation/compress.py",
-    "src/data-preparation",
-    "src",
-    "data/original/1729.wav",
-    "data/original/1728.wav",
-    "data/original/1727.wav",
-    "data/original/2678.wav",
-    "data/original/2677.wav",
-    "data/original/2659.wav",
+    "src/data-preparation/generate_stfts.py",
+    "src/data-preparation/generate_stfts",
+    "data/converted/mp3/1729.mp3",
+    "data/converted/mp3/1728.mp3",
+    "data/converted/mp3/1727.mp3",
+    "data/converted/mp3/2678.mp3",
+    "data/converted/mp3/2677.mp3",
+    "data/converted/mp3/2659.mp3",
+    "data/converted/mp3/2633.mp3",
+    "data/converted/mp3/2632.mp3",
+    "data/converted/mp3/2629.mp3",
+    "obsidian/TODO.md",
+    "[.md",
     "obsidian/sources/content/Restoring and reconstructing old and damaged compositions using AI to preserve the musical heritage.md",
+    "obsidian/Data representation.md",
     "obsidian/sources/content/Pasted image 20240412041233.png",
     "obsidian/Harmonogram.md",
-    "obsidian/TODO.md",
     "obsidian/Praca Magisterska.md",
     "obsidian/sources/13. Diffusion Models for Audio Restoration.md",
     "obsidian/sources/12. MACHINE LEARNING APPROACHES TO HISTORIC MUSIC RESTORATION.md",
