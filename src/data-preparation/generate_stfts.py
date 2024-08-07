@@ -1,5 +1,6 @@
 import os
 import logging
+import shutil
 from concurrent.futures import ProcessPoolExecutor, as_completed
 import multiprocessing
 from tqdm import tqdm
@@ -34,6 +35,10 @@ def process_audio_file(file_path, output_dir, window_size=2048, hop_size=512):
 def process_directory(input_dir):
     mp3_dir = os.path.join(input_dir, "mp3")
     stft_dir = os.path.join(input_dir, "STFT")
+
+    # Clear existing STFT files
+    if os.path.exists(stft_dir):
+        shutil.rmtree(stft_dir)
     os.makedirs(stft_dir, exist_ok=True)
 
     tasks = []
@@ -64,6 +69,8 @@ def main(directories):
         all_tasks.extend(process_directory(directory))
 
     num_cores = multiprocessing.cpu_count()
+    logging.info(f"Using all {num_cores} CPU cores")
+
     with ProcessPoolExecutor(max_workers=num_cores) as executor:
         futures = [executor.submit(process_audio_file, file_path, output_dir) for file_path, output_dir in all_tasks]
 
