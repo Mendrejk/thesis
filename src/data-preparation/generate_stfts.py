@@ -1,52 +1,46 @@
 import os
-import librosa
-import numpy as np
-import soundfile as sf
-import matplotlib.pyplot as plt
+import logging
 from concurrent.futures import ProcessPoolExecutor, as_completed
 import multiprocessing
+from tqdm import tqdm
+import numpy as np
+import librosa
+import matplotlib.pyplot as plt
+import argparse
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 def signed_sqrt(x):
     return np.sign(x) * np.sqrt(np.abs(x))
 
 
-def process_audio_file(file_path, output_dir):
-    # Load audio file
-    audio, sr = librosa.load(file_path, sr=None)
+def process_audio_file(file_path, output_dir, window_size=2048, hop_size=512):
+    try:
+        audio, sr = librosa.load(file_path, sr=None)
+        stft = librosa.stft(audio, n_fft=window_size, hop_length=hop_size)
+        stft_scaled = signed_sqrt(stft.real) + 1j * signed_sqrt(stft.imag)
 
-    # Compute STFT
-    window_size = 2048
-    hop_size = 512
-    stft = librosa.stft(audio, n_fft=window_size, hop_length=hop_size)
+        base_name = os.path.splitext(os.path.basename(file_path))[0]
+        output_file = os.path.join(output_dir, f"{base_name}_stft.npz")
+        np.savez_compressed(output_file, stft=stft_scaled, sr=sr, window_size=window_size, hop_size=hop_size)
 
-    # Apply non-linear scaling (signed square root)
-    stft_scaled = signed_sqrt(stft.real) + 1j * signed_sqrt(stft.imag)
-
-    # Create output filename
-    base_name = os.path.splitext(os.path.basename(file_path))[0]
-    output_file = os.path.join(output_dir, f"{base_name}_stft.npy")
-
-    # Save STFT
-    np.save(output_file, stft_scaled)
-
-    return file_path, stft_scaled
+        return file_path, stft_scaled
+    except Exception as e:
+        logging.error(f"Error processing {file_path}: {str(e)}")
+        return file_path, None
 
 
 def process_directory(input_dir):
     mp3_dir = os.path.join(input_dir, "mp3")
     stft_dir = os.path.join(input_dir, "STFT")
-
-    # Create STFT directory if it doesn't exist
     os.makedirs(stft_dir, exist_ok=True)
 
-    # Process each MP3 file
     tasks = []
     for filename in os.listdir(mp3_dir):
         if filename.endswith(".mp3"):
             file_path = os.path.join(mp3_dir, filename)
             tasks.append((file_path, stft_dir))
-
     return tasks
 
 
@@ -57,33 +51,39 @@ def visualize_stft(file_path, stft):
     plt.colorbar(format='%+2.0f dB')
     plt.title(f'STFT of {os.path.basename(file_path)}')
     plt.tight_layout()
-    plt.show(block=False)
+    output_file = os.path.splitext(file_path)[0] + '_stft.png'
+    plt.savefig(output_file)
+    plt.close()
+    logging.info(f"Saved STFT visualization to {output_file}")
 
 
-# List of directories to process
-directories = [
-    "../data/converted",
-    "../data/low_quality",
-    "../data/no_noise_ultra_low_quality",
-    "../data/ultra_low_quality",
-    "../data/vinyl_crackle"
-]
+def main(directories):
+    all_tasks = []
+    for directory in directories:
+        logging.info(f"Processing directory: {directory}")
+        all_tasks.extend(process_directory(directory))
 
-# Gather all tasks
-all_tasks = []
-for directory in directories:
-    print(f"Processing directory: {directory}")
-    all_tasks.extend(process_directory(directory))
+    num_cores = multiprocessing.cpu_count()
+    with ProcessPoolExecutor(max_workers=num_cores) as executor:
+        futures = [executor.submit(process_audio_file, file_path, output_dir) for file_path, output_dir in all_tasks]
 
-# Process files in parallel
-num_cores = multiprocessing.cpu_count()
-with ProcessPoolExecutor(max_workers=num_cores) as executor:
-    futures = [executor.submit(process_audio_file, file_path, output_dir) for file_path, output_dir in all_tasks]
+        for future in tqdm(as_completed(futures), total=len(futures), desc="Processing files"):
+            file_path, stft = future.result()
+            if stft is not None and "2353" in file_path:
+                visualize_stft(file_path, stft)
 
-    for future in as_completed(futures):
-        file_path, stft = future.result()
-        if "2353" in file_path:
-            visualize_stft(file_path, stft)
+    logging.info("STFT generation complete!")
 
-print("STFT generation complete!")
-plt.show()  # This will block until all plot windows are closed
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Generate and visualize STFTs for audio files.")
+    parser.add_argument("--dirs", nargs="+", default=[
+        "../data/converted",
+        "../data/low_quality",
+        "../data/no_noise_ultra_low_quality",
+        "../data/ultra_low_quality",
+        "../data/vinyl_crackle"
+    ], help="List of directories to process")
+    args = parser.parse_args()
+
+    main(args.dirs)
