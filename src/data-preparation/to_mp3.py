@@ -3,7 +3,7 @@ from pydub import AudioSegment
 
 # Set the input and output directories
 input_dir = os.path.join("..", "data", "original")
-output_dir = os.path.join("..", "data", "converted")
+output_dir = os.path.join("..", "data", "converted", "mp3")
 
 #print the current path
 print(os.getcwd())

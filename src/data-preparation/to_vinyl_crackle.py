@@ -89,8 +89,8 @@ def process_file(filename, input_dir, output_dir, crackle_level):
 
 def main():
     # Set the input and output directories
-    input_dir = os.path.join("..", "data", "converted")
-    output_dir = os.path.join("..", "data", "vinyl_crackle")
+    input_dir = os.path.join("..", "data", "converted", "mp3")
+    output_dir = os.path.join("..", "data", "vinyl_crackle", "mp3")
 
     # Create the output directory if it doesn't exist
     os.makedirs(output_dir, exist_ok=True)

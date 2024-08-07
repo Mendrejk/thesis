@@ -43,8 +43,8 @@ def process_file(filename, input_dir, output_dir, bitrate, sample_rate):
 
 def main():
     # Set the input and output directories
-    input_dir = os.path.join("..", "data", "converted")
-    output_dir = os.path.join("..", "data", "no_noise_ultra_low_quality")
+    input_dir = os.path.join("..", "data", "converted", "mp3")
+    output_dir = os.path.join("..", "data", "no_noise_ultra_low_quality", "mp3")
 
     # Create the output directory if it doesn't exist
     os.makedirs(output_dir, exist_ok=True)

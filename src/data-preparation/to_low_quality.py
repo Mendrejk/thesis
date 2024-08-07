@@ -2,8 +2,8 @@ import os
 from pydub import AudioSegment
 
 # Set the input and output directories
-input_dir = os.path.join("..", "data", "converted")
-output_dir = os.path.join("..", "data", "low_quality")
+input_dir = os.path.join("..", "data", "converted", "mp3")
+output_dir = os.path.join("..", "data", "low_quality", "mp3")
 
 # Create the output directory if it doesn't exist
 os.makedirs(output_dir, exist_ok=True)
