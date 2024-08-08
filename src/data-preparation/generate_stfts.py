@@ -1,15 +1,19 @@
 import os
 import logging
-import shutil
-from concurrent.futures import ProcessPoolExecutor, as_completed
 import multiprocessing
+from concurrent.futures import ProcessPoolExecutor, as_completed, wait, FIRST_COMPLETED
 from tqdm import tqdm
 import numpy as np
 import librosa
-import matplotlib.pyplot as plt
 import argparse
+import psutil
+import gc
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+# Set the maximum RAM usage (in bytes)
+MAX_RAM = 16 * 1024 * 1024 * 1024  # 16GB
+MAX_CORES = 12
 
 
 def signed_sqrt(x):
@@ -32,7 +36,7 @@ def process_audio_file(file_path, output_dir, window_size=2048, hop_size=512):
 
         np.savez_compressed(output_file, stft=stft_scaled, sr=sr, window_size=window_size, hop_size=hop_size)
 
-        return file_path, stft_scaled
+        return file_path, output_file
     except Exception as e:
         logging.error(f"Error processing {file_path}: {str(e)}")
         return file_path, None
@@ -53,39 +57,39 @@ def process_directory(input_dir):
     return tasks
 
 
-def visualize_stft(file_path, stft):
-    plt.figure(figsize=(10, 6))
-    librosa.display.specshow(librosa.amplitude_to_db(np.abs(stft), ref=np.max),
-                             y_axis='hz', x_axis='time')
-    plt.colorbar(format='%+2.0f dB')
-    plt.title(f'STFT of {os.path.basename(file_path)}')
-    plt.tight_layout()
-    plt.show()  # This will open the plot in a new window
-    logging.info(f"Displayed STFT visualization for {file_path}")
-
-
 def main(directories):
     all_tasks = []
     for directory in directories:
         logging.info(f"Processing directory: {directory}")
         all_tasks.extend(process_directory(directory))
 
-    num_cores = multiprocessing.cpu_count()
-    logging.info(f"Using all {num_cores} CPU cores")
+    num_cores = min(MAX_CORES, multiprocessing.cpu_count())
+    logging.info(f"Using {num_cores} CPU cores")
 
     with ProcessPoolExecutor(max_workers=num_cores) as executor:
-        futures = [executor.submit(process_audio_file, file_path, output_dir) for file_path, output_dir in all_tasks]
+        futures = []
+        for file_path, output_dir in all_tasks:
+            # Check if we have enough memory to start a new task
+            while psutil.virtual_memory().available < MAX_RAM * 0.2:  # Ensure at least 20% of MAX_RAM is available
+                # Wait for some tasks to complete
+                done, futures = wait(futures, return_when=FIRST_COMPLETED)
+                for future in done:
+                    file_path, output_file = future.result()
+                    if output_file:
+                        logging.info(f"Completed processing: {file_path}")
+
+            futures.append(executor.submit(process_audio_file, file_path, output_dir))
 
         for future in tqdm(as_completed(futures), total=len(futures), desc="Processing files"):
-            file_path, stft = future.result()
-            if stft is not None:
-                visualize_stft(file_path, stft)
+            file_path, output_file = future.result()
+            if output_file:
+                logging.info(f"Completed processing: {file_path}")
 
     logging.info("STFT generation complete!")
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Generate and visualize STFTs for audio files.")
+    parser = argparse.ArgumentParser(description="Generate STFTs for audio files with resource constraints.")
     parser.add_argument("--dirs", nargs="+", default=[
         "../data/converted",
         "../data/low_quality",
