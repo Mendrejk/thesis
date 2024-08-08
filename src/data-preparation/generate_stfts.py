@@ -18,12 +18,18 @@ def signed_sqrt(x):
 
 def process_audio_file(file_path, output_dir, window_size=2048, hop_size=512):
     try:
+        base_name = os.path.splitext(os.path.basename(file_path))[0]
+        output_file = os.path.join(output_dir, f"{base_name}_stft.npz")
+
+        # Skip if the file already exists
+        if os.path.exists(output_file):
+            logging.info(f"Skipping existing file: {output_file}")
+            return file_path, None
+
         audio, sr = librosa.load(file_path, sr=None)
         stft = librosa.stft(audio, n_fft=window_size, hop_length=hop_size)
         stft_scaled = signed_sqrt(stft.real) + 1j * signed_sqrt(stft.imag)
 
-        base_name = os.path.splitext(os.path.basename(file_path))[0]
-        output_file = os.path.join(output_dir, f"{base_name}_stft.npz")
         np.savez_compressed(output_file, stft=stft_scaled, sr=sr, window_size=window_size, hop_size=hop_size)
 
         return file_path, stft_scaled
@@ -36,9 +42,7 @@ def process_directory(input_dir):
     mp3_dir = os.path.join(input_dir, "mp3")
     stft_dir = os.path.join(input_dir, "STFT")
 
-    # Clear existing STFT files
-    if os.path.exists(stft_dir):
-        shutil.rmtree(stft_dir)
+    # Create STFT directory if it doesn't exist
     os.makedirs(stft_dir, exist_ok=True)
 
     tasks = []
@@ -56,10 +60,8 @@ def visualize_stft(file_path, stft):
     plt.colorbar(format='%+2.0f dB')
     plt.title(f'STFT of {os.path.basename(file_path)}')
     plt.tight_layout()
-    output_file = os.path.splitext(file_path)[0] + '_stft.png'
-    plt.savefig(output_file)
-    plt.close()
-    logging.info(f"Saved STFT visualization to {output_file}")
+    plt.show()  # This will open the plot in a new window
+    logging.info(f"Displayed STFT visualization for {file_path}")
 
 
 def main(directories):
@@ -76,7 +78,7 @@ def main(directories):
 
         for future in tqdm(as_completed(futures), total=len(futures), desc="Processing files"):
             file_path, stft = future.result()
-            if stft is not None and "2353" in file_path:
+            if stft is not None:
                 visualize_stft(file_path, stft)
 
     logging.info("STFT generation complete!")
