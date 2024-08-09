@@ -6,14 +6,15 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader
 from sklearn.model_selection import train_test_split
-import keras
-from keras import ops
 import glob
+import keras
+from keras import backend as K
+import gc
 
 class STFTDataset(Dataset):
     def __init__(self, high_quality_dir, low_quality_dir, transform=None):
-        self.high_quality_files = glob.glob(os.path.join(high_quality_dir, '*_stft.npz'))
-        self.low_quality_files = glob.glob(os.path.join(low_quality_dir, '*_stft.npz'))
+        self.high_quality_files = sorted(glob.glob(os.path.join(high_quality_dir, '*_stft.npz')))
+        self.low_quality_files = sorted(glob.glob(os.path.join(low_quality_dir, '*_stft.npz')))
         assert len(self.high_quality_files) == len(self.low_quality_files), "Mismatch in number of files"
         self.transform = transform
 
@@ -30,9 +31,17 @@ class STFTDataset(Dataset):
         hq_stft = hq_data['stft']
         lq_stft = lq_data['stft']
 
-        # Convert to torch tensors
+        # Handle complex data
+        hq_stft = np.stack((hq_stft.real, hq_stft.imag), axis=-1)
+        lq_stft = np.stack((lq_stft.real, lq_stft.imag), axis=-1)
+
+        # Convert to PyTorch tensors
         hq_stft = torch.from_numpy(hq_stft).float()
         lq_stft = torch.from_numpy(lq_stft).float()
+
+        # Ensure the tensors have the shape (channels, height, width, 2)
+        hq_stft = hq_stft.permute(2, 0, 1, 3)
+        lq_stft = lq_stft.permute(2, 0, 1, 3)
 
         if self.transform:
             hq_stft = self.transform(hq_stft)
@@ -57,6 +66,9 @@ def prepare_data(high_quality_dir, low_quality_dir, batch_size=32, val_split=0.2
 
 
 def main():
+    print(f"Keras backend: {K.backend()}")
+    print(f"Keras version: {keras.__version__}")
+
     # Set directories
     high_quality_dir = "../data/converted/STFT"
     low_quality_dirs = [
