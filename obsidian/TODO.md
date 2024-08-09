@@ -12,3 +12,4 @@
 - [ ] przygotowanie danych
 	- [x] dobór pogorszenia - szumy, kompresja
 	- [x] wygenerowanie wizualizacji utworów z użyciem [STFT](https://en.wikipedia.org/wiki/Short-time_Fourier_transform)
+- [ ] TRZEBA PODZIELIĆ STFT NA 10 SEKUNDOWE BLOKI
