@@ -11,4 +11,4 @@
 	- [ ] decyzja - python + Keras/PyTorch
 - [ ] przygotowanie danych
 	- [x] dobór pogorszenia - szumy, kompresja
-	- [ ] wygenerowanie wizualizacji utworów z użyciem [STFT](https://en.wikipedia.org/wiki/Short-time_Fourier_transform)
+	- [x] wygenerowanie wizualizacji utworów z użyciem [STFT](https://en.wikipedia.org/wiki/Short-time_Fourier_transform)

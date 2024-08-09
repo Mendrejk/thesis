@@ -11,9 +11,11 @@
             "id": "f36134f60e2c68da",
             "type": "leaf",
             "state": {
-              "type": "pdf",
+              "type": "markdown",
               "state": {
-                "file": "obsidian/sources/content/Stochastic Restoration of Heavily Compressed Musical Audio Using Generative Adversarial Networks.pdf"
+                "file": "obsidian/TODO.md",
+                "mode": "source",
+                "source": false
               }
             }
           }
@@ -83,7 +85,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "obsidian/sources/content/Stochastic Restoration of Heavily Compressed Musical Audio Using Generative Adversarial Networks.pdf",
+                "file": "obsidian/TODO.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -100,7 +102,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "obsidian/sources/content/Stochastic Restoration of Heavily Compressed Musical Audio Using Generative Adversarial Networks.pdf",
+                "file": "obsidian/TODO.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -123,7 +125,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "obsidian/sources/content/Stochastic Restoration of Heavily Compressed Musical Audio Using Generative Adversarial Networks.pdf"
+                "file": "obsidian/TODO.md"
               }
             }
           }
@@ -146,20 +148,22 @@
   },
   "active": "f36134f60e2c68da",
   "lastOpenFiles": [
-    "src/data-preparation/generate_stfts.py",
-    "src/data-preparation/generate_stfts",
-    "data/converted/mp3/1729.mp3",
-    "data/converted/mp3/1728.mp3",
-    "data/converted/mp3/1727.mp3",
-    "data/converted/mp3/2678.mp3",
-    "data/converted/mp3/2677.mp3",
-    "data/converted/mp3/2659.mp3",
-    "data/converted/mp3/2633.mp3",
-    "data/converted/mp3/2632.mp3",
-    "data/converted/mp3/2629.mp3",
+    "src/neural-network/gan.py",
+    "src/neural-network",
+    "obsidian/sources/content/Super-Resolution for Music Signals Using Generative Adversarial Networks.pdf",
+    "data/stft_images/stft_visualization_1169.png",
+    "src/data-preparation/visualise_stfts.py~",
+    "data/stft_images/stft_visualization_7205.png",
+    "data/stft_images",
+    "data/ultra_low_quality/STFT/ultra_low_quality_2591_stft.npz",
+    "data/ultra_low_quality/STFT/ultra_low_quality_2582_stft.npz",
+    "data/ultra_low_quality/STFT/ultra_low_quality_2581_stft.npz",
+    "data/ultra_low_quality/STFT/ultra_low_quality_2576_stft.npz",
+    "data/ultra_low_quality/STFT/ultra_low_quality_2575_stft.npz",
+    "data/vinyl_crackle/STFT/vinyl_crackle_2532_stft.npz",
+    "obsidian/sources/content/Restoring and reconstructing old and damaged compositions using AI to preserve the musical heritage.md",
     "obsidian/TODO.md",
     "[.md",
-    "obsidian/sources/content/Restoring and reconstructing old and damaged compositions using AI to preserve the musical heritage.md",
     "obsidian/Data representation.md",
     "obsidian/sources/content/Pasted image 20240412041233.png",
     "obsidian/Harmonogram.md",
