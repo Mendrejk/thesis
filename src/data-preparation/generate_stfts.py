@@ -1,23 +1,38 @@
 import os
 import logging
-import multiprocessing
-from concurrent.futures import ProcessPoolExecutor, as_completed, wait, FIRST_COMPLETED
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from tqdm import tqdm
 import numpy as np
 import librosa
 import argparse
 import psutil
-import gc
+import shutil
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Set the maximum RAM usage (in bytes)
-MAX_RAM = 16 * 1024 * 1024 * 1024  # 16GB
+MAX_RAM = 22 * 1024 * 1024 * 1024  # 22GB
 MAX_CORES = 12
 
 
 def signed_sqrt(x):
     return np.sign(x) * np.sqrt(np.abs(x))
+
+
+def clear_directory(directory):
+    """Clear all files in the specified directory."""
+    if os.path.exists(directory):
+        for filename in os.listdir(directory):
+            file_path = os.path.join(directory, filename)
+            try:
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                print(f'Failed to delete {file_path}. Reason: {e}')
+    else:
+        os.makedirs(directory)
 
 
 def process_audio_file(file_path, output_dir, window_size=2048, hop_size=512):
@@ -27,8 +42,7 @@ def process_audio_file(file_path, output_dir, window_size=2048, hop_size=512):
 
         # Skip if the file already exists
         if os.path.exists(output_file):
-            logging.info(f"Skipping existing file: {output_file}")
-            return file_path, None
+            return False  # Skipped
 
         audio, sr = librosa.load(file_path, sr=None)
         stft = librosa.stft(audio, n_fft=window_size, hop_length=hop_size)
@@ -36,56 +50,65 @@ def process_audio_file(file_path, output_dir, window_size=2048, hop_size=512):
 
         np.savez_compressed(output_file, stft=stft_scaled, sr=sr, window_size=window_size, hop_size=hop_size)
 
-        return file_path, output_file
+        return True  # Processed
     except Exception as e:
         logging.error(f"Error processing {file_path}: {str(e)}")
-        return file_path, None
+        return False  # Error, counted as skipped
 
 
-def process_directory(input_dir):
-    mp3_dir = os.path.join(input_dir, "mp3")
-    stft_dir = os.path.join(input_dir, "STFT")
+def process_directory(input_dir, should_clear):
+    mp3_segments_dir = os.path.join(input_dir, "mp3_segments")
+    stft_segments_dir = os.path.join(input_dir, "stft_segments")
 
-    # Create STFT directory if it doesn't exist
-    os.makedirs(stft_dir, exist_ok=True)
+    # Clear and recreate STFT segments directory if requested
+    if should_clear:
+        clear_directory(stft_segments_dir)
+        logging.info(f"Cleared output directory: {stft_segments_dir}")
+    else:
+        os.makedirs(stft_segments_dir, exist_ok=True)
 
     tasks = []
-    for filename in os.listdir(mp3_dir):
+    for filename in os.listdir(mp3_segments_dir):
         if filename.endswith(".mp3"):
-            file_path = os.path.join(mp3_dir, filename)
-            tasks.append((file_path, stft_dir))
+            file_path = os.path.join(mp3_segments_dir, filename)
+            tasks.append((file_path, stft_segments_dir))
     return tasks
 
 
 def main(directories):
+    should_clear = input("Do you want to clear existing STFT files? (y/N): ").lower() == 'y'
+
     all_tasks = []
     for directory in directories:
         logging.info(f"Processing directory: {directory}")
-        all_tasks.extend(process_directory(directory))
+        all_tasks.extend(process_directory(directory, should_clear))
 
-    num_cores = min(MAX_CORES, multiprocessing.cpu_count())
-    logging.info(f"Using {num_cores} CPU cores")
+    num_cores = MAX_CORES
+    logging.info(f"Using {num_cores} CPU cores and up to {MAX_RAM / (1024 ** 3):.1f} GB of RAM")
+
+    processed_count = 0
+    skipped_count = 0
 
     with ProcessPoolExecutor(max_workers=num_cores) as executor:
-        futures = []
-        for file_path, output_dir in all_tasks:
-            # Check if we have enough memory to start a new task
-            while psutil.virtual_memory().available < MAX_RAM * 0.2:  # Ensure at least 20% of MAX_RAM is available
-                # Wait for some tasks to complete
-                done, futures = wait(futures, return_when=FIRST_COMPLETED)
-                for future in done:
-                    file_path, output_file = future.result()
-                    if output_file:
-                        logging.info(f"Completed processing: {file_path}")
+        futures = [executor.submit(process_audio_file, file_path, output_dir) for file_path, output_dir in all_tasks]
 
-            futures.append(executor.submit(process_audio_file, file_path, output_dir))
+        with tqdm(total=len(futures), desc="Processing files") as pbar:
+            for future in as_completed(futures):
+                result = future.result()
+                if result:
+                    processed_count += 1
+                else:
+                    skipped_count += 1
 
-        for future in tqdm(as_completed(futures), total=len(futures), desc="Processing files"):
-            file_path, output_file = future.result()
-            if output_file:
-                logging.info(f"Completed processing: {file_path}")
+                pbar.set_description(f"Processed: {processed_count}, Skipped: {skipped_count}")
+                pbar.update(1)
 
-    logging.info("STFT generation complete!")
+                # Check available memory and wait if necessary
+                while psutil.virtual_memory().available < MAX_RAM * 0.1:  # Increased threshold to 10%
+                    pbar.set_description("Waiting for memory to be freed...")
+                    psutil.wait_procs(psutil.Process().children(), timeout=5)
+
+    logging.info(f"STFT generation complete! Processed: {processed_count}, Skipped: {skipped_count}")
 
 
 if __name__ == "__main__":
@@ -93,7 +116,6 @@ if __name__ == "__main__":
     parser.add_argument("--dirs", nargs="+", default=[
         "../data/converted",
         "../data/low_quality",
-        "../data/no_noise_ultra_low_quality",
         "../data/ultra_low_quality",
         "../data/vinyl_crackle"
     ], help="List of directories to process")

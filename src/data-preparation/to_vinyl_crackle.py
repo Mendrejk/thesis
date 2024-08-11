@@ -1,9 +1,33 @@
 import os
+import shutil
 import numpy as np
 from pydub import AudioSegment
 from scipy import signal
-from multiprocessing import Pool, cpu_count
-from functools import partial
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from tqdm import tqdm
+
+# Set the input and output directories
+input_dir = os.path.join("..", "data", "converted", "mp3_segments")
+output_dir = os.path.join("..", "data", "vinyl_crackle", "mp3_segments")
+
+# Set the crackle level
+crackle_level = 0.5  # Adjust as needed
+
+
+def clear_directory(directory):
+    """Clear all files in the specified directory."""
+    if os.path.exists(directory):
+        for filename in os.listdir(directory):
+            file_path = os.path.join(directory, filename)
+            try:
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                print(f'Failed to delete {file_path}. Reason: {e}')
+    else:
+        os.makedirs(directory)
 
 
 def generate_vinyl_crackle(duration_ms, sample_rate):
@@ -11,7 +35,7 @@ def generate_vinyl_crackle(duration_ms, sample_rate):
     samples = np.zeros(num_samples)
 
     # Generate sparse pops and crackles
-    event_density = 0.0001 # Doubled from 0.00005 to make events twice as common
+    event_density = 0.0001  # Doubled from 0.00005 to make events twice as common
     event_positions = np.random.randint(0, num_samples, int(num_samples * event_density))
 
     for pos in event_positions:
@@ -49,6 +73,7 @@ def generate_vinyl_crackle(duration_ms, sample_rate):
 
     return samples
 
+
 def add_vinyl_crackle(audio, crackle_level=0.5):
     samples = np.array(audio.get_array_of_samples())
     sample_rate = audio.frame_rate
@@ -72,9 +97,10 @@ def add_vinyl_crackle(audio, crackle_level=0.5):
                         sample_width=audio.sample_width,
                         channels=audio.channels)
 
-def process_file(filename, input_dir, output_dir, crackle_level):
+
+def process_file(filename):
     input_path = os.path.join(input_dir, filename)
-    output_path = os.path.join(output_dir, f"vinyl_crackle_{filename}")
+    output_path = os.path.join(output_dir, filename)
 
     # Load the audio file
     audio = AudioSegment.from_file(input_path, format="mp3")
@@ -85,42 +111,31 @@ def process_file(filename, input_dir, output_dir, crackle_level):
     # Export as MP3
     noisy_audio.export(output_path, format="mp3")
 
-    return f"Added vinyl crackle to {filename}"
+    return filename
+
 
 def main():
-    # Set the input and output directories
-    input_dir = os.path.join("..", "data", "converted", "mp3")
-    output_dir = os.path.join("..", "data", "vinyl_crackle", "mp3")
+    # Clear the output directory
+    clear_directory(output_dir)
+    print(f"Cleared output directory: {output_dir}")
 
-    # Create the output directory if it doesn't exist
-    os.makedirs(output_dir, exist_ok=True)
-
-    # Set the crackle level
-    crackle_level = 0.5  # Adjust as needed
-
-    # Get list of MP3 files
+    # Get all MP3 files in the input directory
     mp3_files = [f for f in os.listdir(input_dir) if f.endswith(".mp3")]
 
-    # Set up the process pool
-    num_processes = max(1, cpu_count() - 1)  # Leave one CPU core free
-    pool = Pool(processes=num_processes)
+    # Use ProcessPoolExecutor for parallel processing
+    with ProcessPoolExecutor() as executor:
+        # Submit all tasks
+        futures = [executor.submit(process_file, filename) for filename in mp3_files]
 
-    # Create a partial function with fixed arguments
-    process_file_partial = partial(process_file, input_dir=input_dir, output_dir=output_dir,
-                                   crackle_level=crackle_level)
-
-    # Process files in parallel
-    results = pool.map(process_file_partial, mp3_files)
-
-    # Close the pool and wait for all processes to finish
-    pool.close()
-    pool.join()
-
-    # Print results
-    for result in results:
-        print(result)
+        # Create a progress bar
+        with tqdm(total=len(mp3_files), desc="Adding vinyl crackle") as pbar:
+            for future in as_completed(futures):
+                filename = future.result()
+                pbar.update(1)
+                pbar.set_postfix_str(f"Processed {filename}")
 
     print("Vinyl crackle addition complete!")
+
 
 if __name__ == "__main__":
     main()

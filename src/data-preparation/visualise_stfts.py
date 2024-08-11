@@ -123,7 +123,7 @@ if __name__ == "__main__":
     parser.add_argument("--dirs", nargs="+", default=[
         "../data/converted",
         "../data/low_quality",
-        "../data/no_noise_ultra_low_quality",
+        "../data/ultra_low_quality",
         "../data/ultra_low_quality",
         "../data/vinyl_crackle"
     ], help="List of directories to process")

@@ -94,7 +94,7 @@ def main():
     high_quality_dir = "../data/converted/STFT"
     low_quality_dirs = [
         "../data/low_quality/STFT",
-        "../data/no_noise_ultra_low_quality/STFT",
+        "../data/ultra_low_quality/STFT",
         "../data/ultra_low_quality/STFT",
         "../data/vinyl_crackle/STFT"
     ]
