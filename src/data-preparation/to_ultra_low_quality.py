@@ -4,6 +4,7 @@ import numpy as np
 from multiprocessing import Pool, cpu_count
 from functools import partial
 
+
 def add_noise(audio_segment, noise_level=0.01):
     samples = np.array(audio_segment.get_array_of_samples())
     noise = np.random.randn(len(samples)) * noise_level * np.max(np.abs(samples))
@@ -12,6 +13,7 @@ def add_noise(audio_segment, noise_level=0.01):
                         frame_rate=audio_segment.frame_rate,
                         sample_width=audio_segment.sample_width,
                         channels=audio_segment.channels)
+
 
 def process_file(filename, input_dir, output_dir, bitrate, sample_rate):
     input_path = os.path.join(input_dir, filename)
@@ -24,12 +26,7 @@ def process_file(filename, input_dir, output_dir, bitrate, sample_rate):
     ultra_low_quality_audio = (
         audio
         .set_frame_rate(sample_rate)
-        # .set_channels(1)
-        # .compress_dynamic_range()
     )
-
-    # Add noise
-    # ultra_low_quality_audio = add_noise(ultra_low_quality_audio, noise_level=0.02)
 
     # Export as ultra-low-quality MP3
     ultra_low_quality_audio.export(
@@ -76,6 +73,7 @@ def main():
         print(result)
 
     print("Ultra-low-quality conversion complete!")
+
 
 if __name__ == "__main__":
     main()
