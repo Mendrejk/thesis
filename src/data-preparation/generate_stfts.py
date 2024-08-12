@@ -35,6 +35,24 @@ def clear_directory(directory):
         os.makedirs(directory)
 
 
+def get_target_shape(directories, window_size=2048, hop_size=512):
+    max_sr = 0
+    max_duration = 0
+    for directory in directories:
+        mp3_segments_dir = os.path.join(directory, "mp3_segments")
+        for filename in os.listdir(mp3_segments_dir):
+            if filename.endswith(".mp3"):
+                file_path = os.path.join(mp3_segments_dir, filename)
+                audio, sr = librosa.load(file_path, sr=None, duration=1)  # Load just 1 second to get sr
+                max_sr = max(max_sr, sr)
+                duration = librosa.get_duration(filename=file_path)
+                max_duration = max(max_duration, duration)
+
+    num_freq_bins = window_size // 2 + 1
+    num_time_frames = int(np.ceil(max_duration * max_sr / hop_size))
+    return (num_freq_bins, num_time_frames)
+
+
 def process_audio_file(file_path, output_dir, window_size=2048, hop_size=512):
     try:
         base_name = os.path.splitext(os.path.basename(file_path))[0]
@@ -42,7 +60,7 @@ def process_audio_file(file_path, output_dir, window_size=2048, hop_size=512):
 
         # Skip if the file already exists
         if os.path.exists(output_file):
-            return False  # Skipped
+            return False, (0, 0)  # Skipped, return dummy shape
 
         audio, sr = librosa.load(file_path, sr=None)
         stft = librosa.stft(audio, n_fft=window_size, hop_length=hop_size)
@@ -50,10 +68,10 @@ def process_audio_file(file_path, output_dir, window_size=2048, hop_size=512):
 
         np.savez_compressed(output_file, stft=stft_scaled, sr=sr, window_size=window_size, hop_size=hop_size)
 
-        return True  # Processed
+        return True, stft_scaled.shape  # Processed, return actual shape
     except Exception as e:
         logging.error(f"Error processing {file_path}: {str(e)}")
-        return False  # Error, counted as skipped
+        return False, (0, 0)  # Error, counted as skipped, return dummy shape
 
 
 def process_directory(input_dir, should_clear):
@@ -88,15 +106,18 @@ def main(directories):
 
     processed_count = 0
     skipped_count = 0
+    max_shape = (0, 0)
 
     with ProcessPoolExecutor(max_workers=num_cores) as executor:
-        futures = [executor.submit(process_audio_file, file_path, output_dir) for file_path, output_dir in all_tasks]
+        futures = [executor.submit(process_audio_file, file_path, output_dir)
+                   for file_path, output_dir in all_tasks]
 
         with tqdm(total=len(futures), desc="Processing files") as pbar:
             for future in as_completed(futures):
-                result = future.result()
+                result, shape = future.result()
                 if result:
                     processed_count += 1
+                    max_shape = (max(max_shape[0], shape[0]), max(max_shape[1], shape[1]))
                 else:
                     skipped_count += 1
 
@@ -104,11 +125,12 @@ def main(directories):
                 pbar.update(1)
 
                 # Check available memory and wait if necessary
-                while psutil.virtual_memory().available < MAX_RAM * 0.1:  # Increased threshold to 10%
+                while psutil.virtual_memory().available < MAX_RAM * 0.1:
                     pbar.set_description("Waiting for memory to be freed...")
                     psutil.wait_procs(psutil.Process().children(), timeout=5)
 
     logging.info(f"STFT generation complete! Processed: {processed_count}, Skipped: {skipped_count}")
+    logging.info(f"Maximum STFT shape: {max_shape}")
 
 
 if __name__ == "__main__":
