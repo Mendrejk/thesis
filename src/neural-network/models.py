@@ -10,41 +10,64 @@ class Generator(nn.Module):
         self.num_stages = num_stages
 
         # Encoder
-        self.encoder = nn.ModuleList()
-        in_channels = input_shape[0]
-        for i in range(num_stages):
-            out_channels = base_filters * (2 ** i)
-            self.encoder.append(nn.Sequential(
-                nn.Conv2d(in_channels, out_channels, 3, stride=2, padding=1),
-                nn.BatchNorm2d(out_channels),
+        self.encoder = nn.ModuleList([
+            nn.Sequential(
+                nn.Conv2d(2, 64, 3, stride=2, padding=1),
+                nn.BatchNorm2d(64),
                 nn.LeakyReLU(0.2)
-            ))
-            in_channels = out_channels
+            ),
+            nn.Sequential(
+                nn.Conv2d(64, 128, 3, stride=2, padding=1),
+                nn.BatchNorm2d(128),
+                nn.LeakyReLU(0.2)
+            ),
+            nn.Sequential(
+                nn.Conv2d(128, 256, 3, stride=2, padding=1),
+                nn.BatchNorm2d(256),
+                nn.LeakyReLU(0.2)
+            ),
+            nn.Sequential(
+                nn.Conv2d(256, 512, 3, stride=2, padding=1),
+                nn.BatchNorm2d(512),
+                nn.LeakyReLU(0.2)
+            )
+        ])
 
         # Bottleneck
         self.bottleneck = nn.Sequential(
-            nn.Conv2d(base_filters * (2 ** (num_stages - 1)), base_filters * (2 ** num_stages), 3, padding=1),
-            nn.BatchNorm2d(base_filters * (2 ** num_stages)),
+            nn.Conv2d(512, 1024, 3, padding=1),
+            nn.BatchNorm2d(1024),
             nn.LeakyReLU(0.2),
-            nn.Conv2d(base_filters * (2 ** num_stages), base_filters * (2 ** num_stages), 3, padding=1),
-            nn.BatchNorm2d(base_filters * (2 ** num_stages)),
+            nn.Conv2d(1024, 1024, 3, padding=1),
+            nn.BatchNorm2d(1024),
             nn.LeakyReLU(0.2)
         )
 
         # Decoder
-        self.decoder = nn.ModuleList()
-        for i in range(num_stages - 1, -1, -1):
-            in_channels = base_filters * (2 ** (i + 1))
-            out_channels = base_filters * (2 ** i)
-            if i < num_stages - 1:  # If not the last decoder layer, account for skip connection
-                in_channels *= 3  # Multiply by 3 to account for the concatenated skip connection
-            self.decoder.append(nn.Sequential(
-                nn.ConvTranspose2d(in_channels, out_channels, 4, stride=2, padding=1),
-                nn.BatchNorm2d(out_channels),
+        self.decoder = nn.ModuleList([
+            nn.Sequential(
+                nn.ConvTranspose2d(1280, 256, 4, stride=2, padding=1),
+                nn.BatchNorm2d(256),
                 nn.LeakyReLU(0.2)
-            ))
+            ),
+            nn.Sequential(
+                nn.ConvTranspose2d(512, 128, 4, stride=2, padding=1),
+                nn.BatchNorm2d(128),
+                nn.LeakyReLU(0.2)
+            ),
+            nn.Sequential(
+                nn.ConvTranspose2d(256, 64, 4, stride=2, padding=1),
+                nn.BatchNorm2d(64),
+                nn.LeakyReLU(0.2)
+            ),
+            nn.Sequential(
+                nn.ConvTranspose2d(128, 64, 4, stride=2, padding=1),
+                nn.BatchNorm2d(64),
+                nn.LeakyReLU(0.2)
+            )
+        ])
 
-        self.final_conv = nn.Conv2d(base_filters, input_shape[0], 3, padding=1)
+        self.final_conv = nn.Conv2d(64, input_shape[0], 3, padding=1)
 
     def forward(self, x):
         # Encoder
