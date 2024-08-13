@@ -2,7 +2,7 @@
 import keras
 import matplotlib.pyplot as plt
 from collections import defaultdict
-
+import torch.optim as optim
 
 class LossVisualizationCallback(keras.callbacks.Callback):
     def __init__(self, log_dir='./logs'):

@@ -1,4 +1,5 @@
 import keras
+from keras import optimizers
 import os
 import json
 from data_preparation import prepare_data
@@ -6,6 +7,8 @@ from models import build_generator, build_discriminator_with_sn, AudioEnhancemen
 from feature_extractor import build_feature_extractor
 from utils import estimate_memory_usage
 from callbacks import LossVisualizationCallback
+import torch
+from torch import optim
 
 
 class CheckpointCallback(keras.callbacks.Callback):
@@ -18,21 +21,18 @@ class CheckpointCallback(keras.callbacks.Callback):
         state = {
             'epoch': epoch,
             'stage': self.model.current_stage,
-            'alpha': float(self.model.alpha),  # Convert to Python float for JSON serialization
-            'optimizer_g': self.model.g_optimizer.get_config(),
-            'optimizer_d': self.model.d_optimizer.get_config(),
+            'alpha': float(self.model.alpha),
+            'optimizer_g': self.model.g_optimizer.state_dict(),
+            'optimizer_d': self.model.d_optimizer.state_dict(),
         }
-        with open(checkpoint_path, 'w') as f:
-            json.dump(state, f)
-
+        torch.save(state, checkpoint_path)
 
 def load_checkpoint(checkpoint_dir):
     checkpoints = [f for f in os.listdir(checkpoint_dir) if f.startswith('checkpoint_epoch_')]
     if not checkpoints:
         return None
     latest_checkpoint = max(checkpoints, key=lambda x: int(x.split('_')[-1].split('.')[0]))
-    with open(os.path.join(checkpoint_dir, latest_checkpoint), 'r') as f:
-        return json.load(f)
+    return torch.load(os.path.join(checkpoint_dir, latest_checkpoint))
 
 
 def progressive_training(gan, train_dataset, val_dataset, initial_epochs=50, progressive_epochs=10, total_stages=4,
@@ -115,8 +115,8 @@ if __name__ == "__main__":
 
     gan = AudioEnhancementGAN(generator, discriminator, feature_extractor)
     gan.compile(
-        g_optimizer=keras.optimizers.Adam(learning_rate=0.0002, beta_1=0.5),
-        d_optimizer=keras.optimizers.Adam(learning_rate=0.0002, beta_1=0.5),
+        g_optimizer=optim.Adam(gan.generator.parameters(), lr=0.0002, betas=(0.5, 0.999)),
+        d_optimizer=optim.Adam(gan.discriminator.parameters(), lr=0.0002, betas=(0.5, 0.999)),
         loss_weights={
             'adversarial': 1.0,
             'content': 100.0,

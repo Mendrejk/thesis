@@ -7,7 +7,7 @@ from torchvggish import vggish, vggish_input
 class VGGishFeatureExtractor(nn.Module):
     def __init__(self, pretrained=True):
         super(VGGishFeatureExtractor, self).__init__()
-        self.vggish = vggish(pretrained=pretrained)
+        self.vggish = vggish(pretrained)
         # Remove the last layer (classification layer)
         self.vggish.postprocess = nn.Identity()
         self.vggish.embeddings = nn.Identity()
