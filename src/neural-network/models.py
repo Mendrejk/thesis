@@ -8,8 +8,11 @@ class Generator(nn.Module):
     def __init__(self, input_shape=(2, 1025, 862), base_filters=64, num_stages=4):
         super().__init__()
         self.num_stages = num_stages
+        self.current_stage = 0
+        self.input_shape = input_shape
+        self.base_filters = base_filters
 
-        # Encoder (keep as is)
+        # Encoder
         self.encoder = nn.ModuleList([
             nn.Sequential(
                 nn.Conv2d(2, 64, 3, stride=2, padding=1),
@@ -33,7 +36,7 @@ class Generator(nn.Module):
             )
         ])
 
-        # Bottleneck (keep as is)
+        # Bottleneck
         self.bottleneck = nn.Sequential(
             nn.Conv2d(512, 1024, 3, padding=1),
             nn.BatchNorm2d(1024),
@@ -43,7 +46,7 @@ class Generator(nn.Module):
             nn.LeakyReLU(0.2)
         )
 
-        # Decoder (modified)
+        # Decoder
         self.decoder = nn.ModuleList([
             nn.Sequential(
                 nn.ConvTranspose2d(1280, 256, 4, stride=2, padding=1),
@@ -61,7 +64,7 @@ class Generator(nn.Module):
                 nn.LeakyReLU(0.2)
             ),
             nn.Sequential(
-                nn.ConvTranspose2d(128, 64, 4, stride=2, padding=1),
+                nn.ConvTranspose2d(64, 64, 4, stride=2, padding=1),
                 nn.BatchNorm2d(64),
                 nn.LeakyReLU(0.2)
             )
@@ -98,6 +101,11 @@ class Generator(nn.Module):
         print(f"Final output shape: {x.shape}")
         return torch.tanh(x)
 
+    def get_current_stage_info(self):
+        current_filters = self.base_filters * (2 ** self.current_stage)
+        return f"Stage {self.current_stage + 1}/{self.num_stages}, Filters: {current_filters}"
+
+
 
 class Discriminator(nn.Module):
     def __init__(self, input_shape=(2, 1025, 862), base_filters=64, num_stages=4):
@@ -129,7 +137,7 @@ class AudioEnhancementGAN(nn.Module):
         self.discriminator = discriminator
         self.feature_extractor = feature_extractor
         self.current_stage = 0
-        self.num_stages = 4
+        self.num_stages = generator.num_stages
         self.alpha = 0.0
         self.accumulation_steps = accumulation_steps
         self.current_step = 0
@@ -148,19 +156,18 @@ class AudioEnhancementGAN(nn.Module):
             'time_frequency': 1.0
         }
 
-    def val_step(self, data):
-        real_input, real_target = data
-        with torch.no_grad():
-            generated_audio = self.generator(real_input)
-            fake_output = self.discriminator(generated_audio)
+    def val_step(self, batch):
+        real_input, real_target = batch
+        real_input = real_input.to(self.device)
+        real_target = real_target.to(self.device)
 
-            real_features = self.feature_extractor(real_target)
-            fake_features = self.feature_extractor(generated_audio)
+        generated_audio = self.generator(real_input)
+        fake_output = self.discriminator(generated_audio)
 
-            g_loss, loss_components = losses.generator_loss(
-                real_target, generated_audio, fake_output,
-                real_features, fake_features, self.loss_weights
-            )
+        g_loss, _ = losses.generator_loss(real_target, generated_audio, fake_output,
+                                          self.feature_extractor(real_target),
+                                          self.feature_extractor(generated_audio),
+                                          self.loss_weights)
 
         return g_loss.item()
 
@@ -254,6 +261,9 @@ class AudioEnhancementGAN(nn.Module):
     def to(self, device):
         self.device = device
         return super().to(device)
+
+    def get_current_stage_info(self):
+        return self.generator.get_current_stage_info()
 
 
 def build_discriminator_with_sn(input_shape=(2, 1025, 862), base_filters=64, num_stages=4):

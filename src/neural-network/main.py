@@ -8,6 +8,9 @@ from models import Generator, Discriminator, AudioEnhancementGAN
 from feature_extractor import build_feature_extractor
 from utils import estimate_memory_usage
 from callbacks import LossVisualizationCallback
+import time
+from tqdm import tqdm
+import gc
 
 
 class CheckpointCallback:
@@ -59,8 +62,15 @@ def progressive_training(gan, train_loader, val_loader, initial_epochs=50, progr
     checkpoint_callback = CheckpointCallback(checkpoint_dir)
     loss_visualization_callback = LossVisualizationCallback(log_dir=log_dir)
 
+    total_epochs = initial_epochs + progressive_epochs * (total_stages - 1)
+    overall_progress = tqdm(total=total_epochs, desc="Overall Progress", position=0)
+    overall_progress.update(start_stage * progressive_epochs + start_epoch)
+
     for stage in range(start_stage, total_stages):
-        print(f"Training stage {stage + 1}/{total_stages}")
+        gan.current_stage = stage
+        gan.generator.current_stage = stage
+        print(f"\nTraining stage {stage + 1}/{total_stages}")
+        print(f"Current stage info: {gan.get_current_stage_info()}")
 
         stage_log_dir = os.path.join(log_dir, f'stage_{stage + 1}')
         os.makedirs(stage_log_dir, exist_ok=True)
@@ -68,15 +78,27 @@ def progressive_training(gan, train_loader, val_loader, initial_epochs=50, progr
         epochs = initial_epochs if stage == 0 else progressive_epochs
 
         for epoch in range(start_epoch, epochs):
+            epoch_start_time = time.time()
             gan.train()
-            for batch in train_loader:
-                gan.train_step(batch)
+
+            train_progress = tqdm(train_loader, desc=f"Epoch {epoch + 1}/{epochs}", position=1, leave=False)
+            for batch in train_progress:
+                loss_dict = gan.train_step(batch)
+                train_progress.set_postfix(g_loss=f"{loss_dict['g_loss']:.4f}", d_loss=f"{loss_dict['d_loss']:.4f}")
 
             gan.eval()
+            val_loss = 0
             with torch.no_grad():
-                val_loss = sum(gan.val_step(batch) for batch in val_loader) / len(val_loader)
+                for batch in val_loader:
+                    val_loss += gan.val_step(batch)
+            val_loss /= len(val_loader)
 
-            print(f"Epoch {epoch + 1}/{epochs}, Validation Loss: {val_loss:.4f}")
+            epoch_end_time = time.time()
+            epoch_duration = epoch_end_time - epoch_start_time
+            epochs_left = total_epochs - (stage * progressive_epochs + epoch + 1)
+            eta = epoch_duration * epochs_left / 3600  # ETA in hours
+
+            print(f"Epoch {epoch + 1}/{epochs}, Validation Loss: {val_loss:.4f}, ETA: {eta:.2f} hours")
 
             checkpoint_callback.on_epoch_end(epoch, gan)
             loss_visualization_callback.on_epoch_end(epoch, gan)
@@ -86,20 +108,38 @@ def progressive_training(gan, train_loader, val_loader, initial_epochs=50, progr
             sample_output = gan.generator(sample_input)
             save_image(sample_output, os.path.join(stage_log_dir, f'sample_epoch_{epoch + 1}.png'))
 
+            overall_progress.update(1)
+
+            # Clean up GPU memory
+            torch.cuda.empty_cache()
+            gc.collect()
+
         # Save the model after each stage
         torch.save(gan.generator.state_dict(), os.path.join(log_dir, f'generator_stage_{stage + 1}.pth'))
         torch.save(gan.discriminator.state_dict(), os.path.join(log_dir, f'discriminator_stage_{stage + 1}.pth'))
 
         print(f"Stage {stage + 1} complete!")
+        print(f"Final stage info: {gan.get_current_stage_info()}")
         start_epoch = 0  # Reset start_epoch for the next stage
+
+        # Clean up GPU memory after each stage
+        torch.cuda.empty_cache()
+        gc.collect()
+
+    overall_progress.close()
+    print("Training complete!")
+
+    # Final cleanup
+    torch.cuda.empty_cache()
+    gc.collect()
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Audio Enhancement GAN')
     parser.add_argument('--no-cuda', action='store_true', default=False,
                         help='disables CUDA training')
-    parser.add_argument('--batch-size', type=int, default=16, metavar='N',
-                        help='input batch size for training (default: 16)')
+    parser.add_argument('--batch-size', type=int, default=8, metavar='N',
+                        help='input batch size for training (default: 8)')
     args = parser.parse_args()
 
     use_cuda = not args.no_cuda and torch.cuda.is_available()
