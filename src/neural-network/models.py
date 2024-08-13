@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import losses
-from torch.utils.checkpoint import checkpoint
 
 
 class Generator(nn.Module):
@@ -14,54 +13,51 @@ class Generator(nn.Module):
         self.encoder = nn.ModuleList()
         in_channels = input_shape[0]
         for i in range(num_stages):
-            out_channels = base_filters * (2 ** i)
             self.encoder.append(nn.Sequential(
-                nn.Conv2d(in_channels, out_channels, 3, stride=2, padding=1),
-                nn.BatchNorm2d(out_channels),
+                nn.Conv2d(in_channels, base_filters * (2 ** i), 3, stride=2, padding=1),
+                nn.BatchNorm2d(base_filters * (2 ** i)),
                 nn.LeakyReLU(0.2)
             ))
-            in_channels = out_channels
+            in_channels = base_filters * (2 ** i)
 
         # Bottleneck
-        bottleneck_channels = base_filters * (2 ** num_stages)
         self.bottleneck = nn.Sequential(
-            nn.Conv2d(in_channels, bottleneck_channels, 3, padding=1),
-            nn.BatchNorm2d(bottleneck_channels),
+            nn.Conv2d(base_filters * (2 ** (num_stages - 1)), base_filters * (2 ** num_stages), 3, padding=1),
+            nn.BatchNorm2d(base_filters * (2 ** num_stages)),
             nn.LeakyReLU(0.2),
-            nn.Conv2d(bottleneck_channels, bottleneck_channels, 3, padding=1),
-            nn.BatchNorm2d(bottleneck_channels),
+            nn.Conv2d(base_filters * (2 ** num_stages), base_filters * (2 ** num_stages), 3, padding=1),
+            nn.BatchNorm2d(base_filters * (2 ** num_stages)),
             nn.LeakyReLU(0.2)
         )
 
         # Decoder
         self.decoder = nn.ModuleList()
         for i in range(num_stages - 1, -1, -1):
-            in_channels = base_filters * (2 ** (i + 1))
-            out_channels = base_filters * (2 ** i)
             self.decoder.append(nn.Sequential(
-                nn.ConvTranspose2d(in_channels * 2, out_channels, 3, stride=2, padding=1, output_padding=1),
-                nn.BatchNorm2d(out_channels),
+                nn.ConvTranspose2d(base_filters * (2 ** (i + 1)), base_filters * (2 ** i), 3, stride=2, padding=1,
+                                   output_padding=1),
+                nn.BatchNorm2d(base_filters * (2 ** i)),
                 nn.LeakyReLU(0.2)
             ))
 
-        self.final_conv = nn.Conv2d(base_filters, input_shape[0], 3, padding=1)
+        self.final_conv = nn.Conv2d(base_filters, 2, 3, padding=1)
 
     def forward(self, x):
         # Encoder
         encoder_outputs = []
         for encoder_layer in self.encoder:
-            x = checkpoint(encoder_layer, x, use_reentrant=False)
+            x = encoder_layer(x)
             encoder_outputs.append(x)
 
         # Bottleneck
-        x = checkpoint(self.bottleneck, x, use_reentrant=False)
+        x = self.bottleneck(x)
 
         # Decoder with skip connections
         for i, decoder_layer in enumerate(self.decoder):
-            encoder_output = encoder_outputs[-(i + 1)]
-            x = F.interpolate(x, size=encoder_output.shape[2:], mode='bilinear', align_corners=False)
-            x = torch.cat([x, encoder_output], dim=1)
-            x = checkpoint(decoder_layer, x, use_reentrant=False)
+            x = decoder_layer(x)
+            if i < len(self.decoder) - 1:
+                encoder_output = F.interpolate(encoder_outputs[-(i + 2)], size=x.shape[2:])
+                x = torch.cat([x, encoder_output], dim=1)
 
         return torch.tanh(self.final_conv(x))
 
@@ -153,8 +149,8 @@ class AudioEnhancementGAN(nn.Module):
 
     def train_step(self, data):
         real_input, real_target = data
-        real_input = real_input.to(self.device).requires_grad_(True)
-        real_target = real_target.to(self.device).requires_grad_(True)
+        real_input = real_input.to(self.device)
+        real_target = real_target.to(self.device)
         batch_size = real_input.size(0)
 
         # Progressive growing
@@ -187,8 +183,7 @@ class AudioEnhancementGAN(nn.Module):
         fake_output = self.discriminator(generated_audio)
 
         # Extract features
-        with torch.no_grad():
-            real_features = self.feature_extractor(real_target)
+        real_features = self.feature_extractor(real_target)
         fake_features = self.feature_extractor(generated_audio)
 
         g_loss, loss_components = losses.generator_loss(
