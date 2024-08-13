@@ -9,7 +9,7 @@ class Generator(nn.Module):
         super().__init__()
         self.num_stages = num_stages
 
-        # Encoder
+        # Encoder (keep as is)
         self.encoder = nn.ModuleList([
             nn.Sequential(
                 nn.Conv2d(2, 64, 3, stride=2, padding=1),
@@ -33,7 +33,7 @@ class Generator(nn.Module):
             )
         ])
 
-        # Bottleneck
+        # Bottleneck (keep as is)
         self.bottleneck = nn.Sequential(
             nn.Conv2d(512, 1024, 3, padding=1),
             nn.BatchNorm2d(1024),
@@ -43,7 +43,7 @@ class Generator(nn.Module):
             nn.LeakyReLU(0.2)
         )
 
-        # Decoder
+        # Decoder (modified)
         self.decoder = nn.ModuleList([
             nn.Sequential(
                 nn.ConvTranspose2d(1280, 256, 4, stride=2, padding=1),
@@ -51,12 +51,12 @@ class Generator(nn.Module):
                 nn.LeakyReLU(0.2)
             ),
             nn.Sequential(
-                nn.ConvTranspose2d(512, 128, 4, stride=2, padding=1),
+                nn.ConvTranspose2d(384, 128, 4, stride=2, padding=1),
                 nn.BatchNorm2d(128),
                 nn.LeakyReLU(0.2)
             ),
             nn.Sequential(
-                nn.ConvTranspose2d(256, 64, 4, stride=2, padding=1),
+                nn.ConvTranspose2d(192, 64, 4, stride=2, padding=1),
                 nn.BatchNorm2d(64),
                 nn.LeakyReLU(0.2)
             ),
