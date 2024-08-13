@@ -1,31 +1,32 @@
-import keras
-from keras import optimizers
+import argparse
 import os
-import json
+import torch
+from torch import optim
+from torchvision.utils import save_image
 from data_preparation import prepare_data
-from models import build_generator, build_discriminator_with_sn, AudioEnhancementGAN
+from models import Generator, Discriminator, AudioEnhancementGAN
 from feature_extractor import build_feature_extractor
 from utils import estimate_memory_usage
 from callbacks import LossVisualizationCallback
-import torch
-from torch import optim
 
 
-class CheckpointCallback(keras.callbacks.Callback):
+class CheckpointCallback:
     def __init__(self, checkpoint_dir):
-        super().__init__()
         self.checkpoint_dir = checkpoint_dir
 
-    def on_epoch_end(self, epoch, logs=None):
-        checkpoint_path = os.path.join(self.checkpoint_dir, f'checkpoint_epoch_{epoch}.json')
+    def on_epoch_end(self, epoch, model):
+        checkpoint_path = os.path.join(self.checkpoint_dir, f'checkpoint_epoch_{epoch}.pth')
         state = {
             'epoch': epoch,
-            'stage': self.model.current_stage,
-            'alpha': float(self.model.alpha),
-            'optimizer_g': self.model.g_optimizer.state_dict(),
-            'optimizer_d': self.model.d_optimizer.state_dict(),
+            'stage': model.current_stage,
+            'alpha': float(model.alpha),
+            'generator_state_dict': model.generator.state_dict(),
+            'discriminator_state_dict': model.discriminator.state_dict(),
+            'g_optimizer': model.g_optimizer.state_dict(),
+            'd_optimizer': model.d_optimizer.state_dict(),
         }
         torch.save(state, checkpoint_path)
+
 
 def load_checkpoint(checkpoint_dir):
     checkpoints = [f for f in os.listdir(checkpoint_dir) if f.startswith('checkpoint_epoch_')]
@@ -35,8 +36,8 @@ def load_checkpoint(checkpoint_dir):
     return torch.load(os.path.join(checkpoint_dir, latest_checkpoint))
 
 
-def progressive_training(gan, train_dataset, val_dataset, initial_epochs=50, progressive_epochs=10, total_stages=4,
-                         log_dir='./logs'):
+def progressive_training(gan, train_loader, val_loader, initial_epochs=50, progressive_epochs=10, total_stages=4,
+                         log_dir='./logs', device='cuda'):
     checkpoint_dir = os.path.join(log_dir, 'checkpoints')
     os.makedirs(checkpoint_dir, exist_ok=True)
 
@@ -49,9 +50,14 @@ def progressive_training(gan, train_dataset, val_dataset, initial_epochs=50, pro
         start_epoch = checkpoint['epoch'] + 1
         gan.current_stage = start_stage
         gan.alpha = checkpoint['alpha']
-        gan.g_optimizer.from_config(checkpoint['optimizer_g'])
-        gan.d_optimizer.from_config(checkpoint['optimizer_d'])
+        gan.generator.load_state_dict(checkpoint['generator_state_dict'])
+        gan.discriminator.load_state_dict(checkpoint['discriminator_state_dict'])
+        gan.g_optimizer.load_state_dict(checkpoint['g_optimizer'])
+        gan.d_optimizer.load_state_dict(checkpoint['d_optimizer'])
         print(f"Resuming from stage {start_stage}, epoch {start_epoch}")
+
+    checkpoint_callback = CheckpointCallback(checkpoint_dir)
+    loss_visualization_callback = LossVisualizationCallback(log_dir=log_dir)
 
     for stage in range(start_stage, total_stages):
         print(f"Training stage {stage + 1}/{total_stages}")
@@ -59,77 +65,84 @@ def progressive_training(gan, train_dataset, val_dataset, initial_epochs=50, pro
         stage_log_dir = os.path.join(log_dir, f'stage_{stage + 1}')
         os.makedirs(stage_log_dir, exist_ok=True)
 
-        if stage == 0:
-            epochs = initial_epochs
-        else:
-            epochs = progressive_epochs
+        epochs = initial_epochs if stage == 0 else progressive_epochs
 
-        loss_visualization_callback = LossVisualizationCallback(log_dir=stage_log_dir)
-        checkpoint_callback = CheckpointCallback(checkpoint_dir)
-        model_checkpoint = keras.callbacks.ModelCheckpoint(
-            os.path.join(checkpoint_dir, 'model_{epoch:02d}.h5'),
-            save_best_only=True,
-            monitor='val_loss',
-            mode='min'
-        )
+        for epoch in range(start_epoch, epochs):
+            gan.train()
+            for batch in train_loader:
+                gan.train_step(batch)
 
-        history = gan.fit(
-            train_dataset,
-            initial_epoch=start_epoch if stage == start_stage else 0,
-            epochs=epochs,
-            validation_data=val_dataset,
-            callbacks=[loss_visualization_callback, checkpoint_callback, model_checkpoint]
-        )
+            gan.eval()
+            with torch.no_grad():
+                val_loss = sum(gan.val_step(batch) for batch in val_loader) / len(val_loader)
+
+            print(f"Epoch {epoch + 1}/{epochs}, Validation Loss: {val_loss:.4f}")
+
+            checkpoint_callback.on_epoch_end(epoch, gan)
+            loss_visualization_callback.on_epoch_end(epoch, gan)
+
+            # Save sample outputs
+            sample_input = next(iter(val_loader))[0].to(device)
+            sample_output = gan.generator(sample_input)
+            save_image(sample_output, os.path.join(stage_log_dir, f'sample_epoch_{epoch + 1}.png'))
 
         # Save the model after each stage
-        gan.generator.save(os.path.join(log_dir, f'generator_stage_{stage + 1}.h5'))
-        gan.discriminator.save(os.path.join(log_dir, f'discriminator_stage_{stage + 1}.h5'))
+        torch.save(gan.generator.state_dict(), os.path.join(log_dir, f'generator_stage_{stage + 1}.pth'))
+        torch.save(gan.discriminator.state_dict(), os.path.join(log_dir, f'discriminator_stage_{stage + 1}.pth'))
 
         print(f"Stage {stage + 1} complete!")
         start_epoch = 0  # Reset start_epoch for the next stage
 
 
 if __name__ == "__main__":
-    keras.config.set_backend("torch")  # Ensure we're using the PyTorch backend
+    parser = argparse.ArgumentParser(description='Audio Enhancement GAN')
+    parser.add_argument('--no-cuda', action='store_true', default=False,
+                        help='disables CUDA training')
+    parser.add_argument('--batch-size', type=int, default=16, metavar='N',
+                        help='input batch size for training (default: 16)')
+    args = parser.parse_args()
+
+    use_cuda = not args.no_cuda and torch.cuda.is_available()
+    if use_cuda:
+        device = torch.device("cuda")  # will use ROCm if available
+    else:
+        device = torch.device("cpu")
+
+    print(f"Using device: {device}")
 
     converted_dir = "../data/converted/stft_segments"
     vinyl_crackle_dir = "../data/vinyl_crackle/stft_segments"
-    batch_size = 128  # Adjust based on your GPU memory
     log_dir = './logs'
     os.makedirs(log_dir, exist_ok=True)
 
     # Estimate memory usage
-    memory_usage = estimate_memory_usage(batch_size)
-    print(f"Estimated memory usage for batch size {batch_size}: {memory_usage:.2f} GB")
+    memory_usage = estimate_memory_usage(args.batch_size)
+    print(f"Estimated memory usage for batch size {args.batch_size}: {memory_usage:.2f} GB")
 
     # Prepare data
-    train_dataset, val_dataset = prepare_data(converted_dir, vinyl_crackle_dir, batch_size=batch_size)
-
-    print(f"Number of training batches: {len(train_dataset)}")
-    print(f"Number of validation batches: {len(val_dataset)}")
-
-    # Build and compile the GAN
-    generator = build_generator()
-    discriminator = build_discriminator_with_sn()
-    feature_extractor = build_feature_extractor()
-
-    gan = AudioEnhancementGAN(generator, discriminator, feature_extractor)
-    gan.compile(
-        g_optimizer=optim.Adam(gan.generator.parameters(), lr=0.0002, betas=(0.5, 0.999)),
-        d_optimizer=optim.Adam(gan.discriminator.parameters(), lr=0.0002, betas=(0.5, 0.999)),
-        loss_weights={
-            'adversarial': 1.0,
-            'content': 100.0,
-            'spectral_convergence': 1.0,
-            'spectral_flatness': 1.0,
-            'phase_aware': 1.0,
-            'multi_resolution_stft': 1.0,
-            'perceptual': 0.1,
-            'time_frequency': 1.0
+    data_kwargs = {'batch_size': args.batch_size}
+    if use_cuda:
+        cuda_kwargs = {
+            'num_workers': 4,
+            'pin_memory': True,
         }
-    )
+        data_kwargs.update(cuda_kwargs)
+
+    train_loader, val_loader = prepare_data(converted_dir, vinyl_crackle_dir, **data_kwargs)
+
+    print(f"Number of training batches: {len(train_loader)}")
+    print(f"Number of validation batches: {len(val_loader)}")
+
+    # Build the GAN
+    generator = Generator().to(device)
+    discriminator = Discriminator().to(device)
+    feature_extractor = build_feature_extractor().to(device)
+
+    gan = AudioEnhancementGAN(generator, discriminator, feature_extractor, accumulation_steps=8).to(device)
+    gan.g_optimizer = optim.Adam(gan.generator.parameters(), lr=0.0002, betas=(0.5, 0.999))
+    gan.d_optimizer = optim.Adam(gan.discriminator.parameters(), lr=0.0002, betas=(0.5, 0.999))
 
     # Start progressive training
-    progressive_training(gan, train_dataset, val_dataset, log_dir=log_dir)
+    progressive_training(gan, train_loader, val_loader, log_dir=log_dir, device=device)
 
     print("Training complete!")

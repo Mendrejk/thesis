@@ -93,7 +93,7 @@ if __name__ == "__main__":
         print(f"Estimated memory usage for batch size {batch_size}: {memory_usage:.2f} GB")
 
     # Choose a batch size based on the estimates and your GPU memory
-    batch_size = 128  # Adjust this based on the estimates and leaving some headroom
+    batch_size = 16  # Adjust this based on the estimates and leaving some headroom
 
     train_dataset, val_dataset = prepare_data(converted_dir, vinyl_crackle_dir, batch_size=batch_size)
 

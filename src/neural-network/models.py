@@ -1,60 +1,95 @@
-import keras
-from keras import layers, Model
-import keras.ops as K
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import losses
+from torch.utils.checkpoint import checkpoint
 
-def build_generator(input_shape=(1025, 862, 2), base_filters=64, num_stages=4):
-    inputs = layers.Input(shape=input_shape)
-    x = inputs
 
-    # Encoder
-    encoder_outputs = []
-    for i in range(num_stages):
-        x = layers.Conv2D(base_filters * (2 ** i), 3, strides=2, padding='same')(x)
-        x = layers.BatchNormalization()(x)
-        x = layers.LeakyReLU(0.2)(x)
-        encoder_outputs.append(x)
+class Generator(nn.Module):
+    def __init__(self, input_shape=(2, 1025, 862), base_filters=64, num_stages=4):
+        super().__init__()
+        self.num_stages = num_stages
 
-    # Bottleneck
-    for _ in range(2):
-        x = layers.Conv2D(base_filters * (2 ** num_stages), 3, padding='same')(x)
-        x = layers.BatchNormalization()(x)
-        x = layers.LeakyReLU(0.2)(x)
+        # Encoder
+        self.encoder = nn.ModuleList()
+        in_channels = input_shape[0]
+        for i in range(num_stages):
+            out_channels = base_filters * (2 ** i)
+            self.encoder.append(nn.Sequential(
+                nn.Conv2d(in_channels, out_channels, 3, stride=2, padding=1),
+                nn.BatchNorm2d(out_channels),
+                nn.LeakyReLU(0.2)
+            ))
+            in_channels = out_channels
 
-    # Decoder with skip connections
-    for i in range(num_stages - 1, -1, -1):
-        x = layers.Conv2DTranspose(base_filters * (2 ** i), 3, strides=2, padding='same')(x)
-        encoder_output = layers.Resizing(
-            K.shape(x)[1],
-            K.shape(x)[2],
-            interpolation='bilinear'
-        )(encoder_outputs[i])
-        x = layers.Concatenate()([x, encoder_output])
-        x = layers.BatchNormalization()(x)
-        x = layers.LeakyReLU(0.2)(x)
+        # Bottleneck
+        bottleneck_channels = base_filters * (2 ** num_stages)
+        self.bottleneck = nn.Sequential(
+            nn.Conv2d(in_channels, bottleneck_channels, 3, padding=1),
+            nn.BatchNorm2d(bottleneck_channels),
+            nn.LeakyReLU(0.2),
+            nn.Conv2d(bottleneck_channels, bottleneck_channels, 3, padding=1),
+            nn.BatchNorm2d(bottleneck_channels),
+            nn.LeakyReLU(0.2)
+        )
 
-    outputs = layers.Conv2D(2, 3, padding='same', activation='tanh')(x)
+        # Decoder
+        self.decoder = nn.ModuleList()
+        for i in range(num_stages - 1, -1, -1):
+            in_channels = base_filters * (2 ** (i + 1))
+            out_channels = base_filters * (2 ** i)
+            self.decoder.append(nn.Sequential(
+                nn.ConvTranspose2d(in_channels * 2, out_channels, 3, stride=2, padding=1, output_padding=1),
+                nn.BatchNorm2d(out_channels),
+                nn.LeakyReLU(0.2)
+            ))
 
-    return Model(inputs, outputs, name="generator")
+        self.final_conv = nn.Conv2d(base_filters, input_shape[0], 3, padding=1)
 
-def build_discriminator(input_shape=(1025, 862, 2), base_filters=64, num_stages=4):
-    inputs = layers.Input(shape=input_shape)
-    x = inputs
+    def forward(self, x):
+        # Encoder
+        encoder_outputs = []
+        for encoder_layer in self.encoder:
+            x = checkpoint(encoder_layer, x, use_reentrant=False)
+            encoder_outputs.append(x)
 
-    for i in range(num_stages):
-        x = layers.Conv2D(base_filters * (2 ** i), 4, strides=2, padding='same')(x)
-        x = layers.LeakyReLU(0.2)(x)
-        if i > 0:
-            x = layers.BatchNormalization()(x)
+        # Bottleneck
+        x = checkpoint(self.bottleneck, x, use_reentrant=False)
 
-    x = layers.Conv2D(1, 4, padding='same')(x)
+        # Decoder with skip connections
+        for i, decoder_layer in enumerate(self.decoder):
+            encoder_output = encoder_outputs[-(i + 1)]
+            x = F.interpolate(x, size=encoder_output.shape[2:], mode='bilinear', align_corners=False)
+            x = torch.cat([x, encoder_output], dim=1)
+            x = checkpoint(decoder_layer, x, use_reentrant=False)
 
-    return Model(inputs, x, name="discriminator")
+        return torch.tanh(self.final_conv(x))
 
-class AudioEnhancementGAN(keras.Model):
-    def __init__(self, generator, discriminator, feature_extractor=None):
+
+class Discriminator(nn.Module):
+    def __init__(self, input_shape=(2, 1025, 862), base_filters=64, num_stages=4):
+        super().__init__()
+        self.layers = nn.ModuleList()
+        in_channels = input_shape[0]
+        for i in range(num_stages):
+            self.layers.append(nn.Sequential(
+                nn.Conv2d(in_channels, base_filters * (2 ** i), 4, stride=2, padding=1),
+                nn.LeakyReLU(0.2)
+            ))
+            if i > 0:
+                self.layers[-1].add_module('bn', nn.BatchNorm2d(base_filters * (2 ** i)))
+            in_channels = base_filters * (2 ** i)
+
+        self.final_conv = nn.Conv2d(in_channels, 1, 4, padding=1)
+
+    def forward(self, x):
+        for layer in self.layers:
+            x = layer(x)
+        return self.final_conv(x)
+
+
+class AudioEnhancementGAN(nn.Module):
+    def __init__(self, generator, discriminator, feature_extractor=None, accumulation_steps=4):
         super().__init__()
         self.generator = generator
         self.discriminator = discriminator
@@ -62,9 +97,10 @@ class AudioEnhancementGAN(keras.Model):
         self.current_stage = 0
         self.num_stages = 4
         self.alpha = 0.0
+        self.accumulation_steps = accumulation_steps
+        self.current_step = 0
 
     def compile(self, g_optimizer, d_optimizer, loss_weights=None):
-        super().compile()
         self.g_optimizer = g_optimizer
         self.d_optimizer = d_optimizer
         self.loss_weights = loss_weights if loss_weights else {
@@ -78,14 +114,33 @@ class AudioEnhancementGAN(keras.Model):
             'time_frequency': 1.0
         }
 
+    def val_step(self, data):
+        real_input, real_target = data
+        with torch.no_grad():
+            generated_audio = self.generator(real_input)
+            fake_output = self.discriminator(generated_audio)
+
+            real_features = self.feature_extractor(real_target)
+            fake_features = self.feature_extractor(generated_audio)
+
+            g_loss, loss_components = losses.generator_loss(
+                real_target, generated_audio, fake_output,
+                real_features, fake_features, self.loss_weights
+            )
+
+        return g_loss.item()
+
     def gradient_penalty(self, real, fake):
-        epsilon = K.random.uniform(shape=[K.shape(real)[0], 1, 1, 1])
+        batch_size = real.size(0)
+        epsilon = torch.rand(batch_size, 1, 1, 1, device=real.device)
         interpolated = epsilon * real + (1 - epsilon) * fake
-        with keras.utils.record_gradients():
-            pred = self.discriminator(interpolated)
-        grads = keras.utils.get_gradients(pred, interpolated)[0]
-        grad_norm = K.sqrt(K.sum(K.square(grads), axis=[1, 2, 3]))
-        gradient_penalty = K.mean(K.square(grad_norm - 1))
+        interpolated.requires_grad_(True)
+        pred = self.discriminator(interpolated)
+        grad = torch.autograd.grad(outputs=pred, inputs=interpolated,
+                                   grad_outputs=torch.ones_like(pred),
+                                   create_graph=True, retain_graph=True)[0]
+        grad_norm = grad.norm(2, dim=1)
+        gradient_penalty = ((grad_norm - 1) ** 2).mean()
         return gradient_penalty
 
     def progressive_step(self):
@@ -98,66 +153,74 @@ class AudioEnhancementGAN(keras.Model):
 
     def train_step(self, data):
         real_input, real_target = data
-        batch_size = K.shape(real_input)[0]
+        real_input = real_input.to(self.device).requires_grad_(True)
+        real_target = real_target.to(self.device).requires_grad_(True)
+        batch_size = real_input.size(0)
 
         # Progressive growing
         if self.alpha > 0 and self.current_stage < self.num_stages - 1:
-            low_res_real = K.image.resize(real_input, (K.shape(real_input)[1] // 2, K.shape(real_input)[2] // 2))
-            low_res_real = K.image.resize(low_res_real, (K.shape(real_input)[1], K.shape(real_input)[2]))
+            low_res_real = F.interpolate(real_input, scale_factor=0.5, mode='bilinear')
+            low_res_real = F.interpolate(low_res_real, size=real_input.shape[2:], mode='bilinear')
             real_input = self.alpha * real_input + (1 - self.alpha) * low_res_real
 
         # Train the discriminator
         self.d_optimizer.zero_grad()
-        with keras.utils.record_gradients():
-            generated_audio = self.generator(real_input)
-            real_output = self.discriminator(real_target)
-            fake_output = self.discriminator(generated_audio)
+        generated_audio = self.generator(real_input)
+        real_output = self.discriminator(real_target)
+        fake_output = self.discriminator(generated_audio.detach())
 
-            d_loss_real = losses.discriminator_loss(K.ones_like(real_output), real_output)
-            d_loss_fake = losses.discriminator_loss(K.zeros_like(fake_output), fake_output)
-            gp = self.gradient_penalty(real_target, generated_audio)
-            d_loss = d_loss_real + d_loss_fake + 10 * gp
+        d_loss_real = losses.discriminator_loss(torch.ones_like(real_output), real_output)
+        d_loss_fake = losses.discriminator_loss(torch.zeros_like(fake_output), fake_output)
+        gp = self.gradient_penalty(real_target, generated_audio.detach())
+        d_loss = d_loss_real + d_loss_fake + 10 * gp
 
+        d_loss = d_loss / self.accumulation_steps
         d_loss.backward()
-        self.d_optimizer.step()
+
+        if (self.current_step + 1) % self.accumulation_steps == 0:
+            self.d_optimizer.step()
+            self.d_optimizer.zero_grad()
 
         # Train the generator
         self.g_optimizer.zero_grad()
-        with keras.utils.record_gradients():
-            generated_audio = self.generator(real_input)
-            fake_output = self.discriminator(generated_audio)
+        generated_audio = self.generator(real_input)
+        fake_output = self.discriminator(generated_audio)
 
-            # Convert Keras tensors to PyTorch tensors for the feature extractor
-            real_target_torch = torch.from_numpy(K.convert_to_numpy(real_target))
-            generated_audio_torch = torch.from_numpy(K.convert_to_numpy(generated_audio))
+        # Extract features
+        with torch.no_grad():
+            real_features = self.feature_extractor(real_target)
+        fake_features = self.feature_extractor(generated_audio)
 
-            # Extract features
-            real_features = self.feature_extractor(real_target_torch)
-            fake_features = self.feature_extractor(generated_audio_torch)
+        g_loss, loss_components = losses.generator_loss(
+            real_target, generated_audio, fake_output,
+            real_features, fake_features, self.loss_weights
+        )
 
-            # Convert back to Keras tensors
-            real_features = K.convert_to_tensor(real_features.detach().numpy())
-            fake_features = K.convert_to_tensor(fake_features.detach().numpy())
-
-            g_loss, loss_components = losses.generator_loss(
-                real_target, generated_audio, fake_output,
-                real_features, fake_features, self.loss_weights
-            )
-
+        g_loss = g_loss / self.accumulation_steps
         g_loss.backward()
-        self.g_optimizer.step()
+
+        if (self.current_step + 1) % self.accumulation_steps == 0:
+            self.g_optimizer.step()
+            self.g_optimizer.zero_grad()
 
         # Progressive growing step
         self.progressive_step()
 
+        self.current_step += 1
+
         return {
-            "d_loss": d_loss,
-            "g_loss": g_loss,
-            **loss_components,
-            "gp": gp,
+            "d_loss": d_loss.item() * self.accumulation_steps,
+            "g_loss": g_loss.item() * self.accumulation_steps,
+            **{k: v.item() for k, v in loss_components.items()},
+            "gp": gp.item(),
             "stage": self.current_stage,
             "alpha": self.alpha
         }
 
-def build_discriminator_with_sn(input_shape=(1025, 862, 2), base_filters=64, num_stages=4): #sn disabled
-    return build_discriminator(input_shape, base_filters, num_stages)
+    def to(self, device):
+        self.device = device
+        return super().to(device)
+
+
+def build_discriminator_with_sn(input_shape=(2, 1025, 862), base_filters=64, num_stages=4):
+    return Discriminator(input_shape, base_filters, num_stages)
