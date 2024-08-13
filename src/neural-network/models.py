@@ -13,12 +13,13 @@ class Generator(nn.Module):
         self.encoder = nn.ModuleList()
         in_channels = input_shape[0]
         for i in range(num_stages):
+            out_channels = base_filters * (2 ** i)
             self.encoder.append(nn.Sequential(
-                nn.Conv2d(in_channels, base_filters * (2 ** i), 3, stride=2, padding=1),
-                nn.BatchNorm2d(base_filters * (2 ** i)),
+                nn.Conv2d(in_channels, out_channels, 3, stride=2, padding=1),
+                nn.BatchNorm2d(out_channels),
                 nn.LeakyReLU(0.2)
             ))
-            in_channels = base_filters * (2 ** i)
+            in_channels = out_channels
 
         # Bottleneck
         self.bottleneck = nn.Sequential(
@@ -33,33 +34,46 @@ class Generator(nn.Module):
         # Decoder
         self.decoder = nn.ModuleList()
         for i in range(num_stages - 1, -1, -1):
+            in_channels = base_filters * (2 ** (i + 1))
+            out_channels = base_filters * (2 ** i)
+            if i < num_stages - 1:  # If not the last decoder layer, account for skip connection
+                in_channels *= 3  # Multiply by 3 to account for the concatenated skip connection
             self.decoder.append(nn.Sequential(
-                nn.ConvTranspose2d(base_filters * (2 ** (i + 1)), base_filters * (2 ** i), 3, stride=2, padding=1,
-                                   output_padding=1),
-                nn.BatchNorm2d(base_filters * (2 ** i)),
+                nn.ConvTranspose2d(in_channels, out_channels, 4, stride=2, padding=1),
+                nn.BatchNorm2d(out_channels),
                 nn.LeakyReLU(0.2)
             ))
 
-        self.final_conv = nn.Conv2d(base_filters, 2, 3, padding=1)
+        self.final_conv = nn.Conv2d(base_filters, input_shape[0], 3, padding=1)
 
     def forward(self, x):
         # Encoder
         encoder_outputs = []
-        for encoder_layer in self.encoder:
+        for i, encoder_layer in enumerate(self.encoder):
             x = encoder_layer(x)
             encoder_outputs.append(x)
+            print(f"Encoder {i} output shape: {x.shape}")
 
         # Bottleneck
         x = self.bottleneck(x)
+        print(f"Bottleneck output shape: {x.shape}")
 
         # Decoder with skip connections
         for i, decoder_layer in enumerate(self.decoder):
-            x = decoder_layer(x)
             if i < len(self.decoder) - 1:
-                encoder_output = F.interpolate(encoder_outputs[-(i + 2)], size=x.shape[2:])
+                encoder_output = encoder_outputs[-(i + 2)]
+                print(f"Decoder {i} input shape: {x.shape}, skip connection shape: {encoder_output.shape}")
+                x = F.interpolate(x, size=encoder_output.shape[2:], mode='bilinear', align_corners=False)
                 x = torch.cat([x, encoder_output], dim=1)
+                print(f"After concatenation shape: {x.shape}")
+            else:
+                print(f"Decoder {i} input shape: {x.shape}")
+            x = decoder_layer(x)
+            print(f"Decoder {i} output shape: {x.shape}")
 
-        return torch.tanh(self.final_conv(x))
+        x = self.final_conv(x)
+        print(f"Final output shape: {x.shape}")
+        return torch.tanh(x)
 
 
 class Discriminator(nn.Module):
@@ -68,13 +82,14 @@ class Discriminator(nn.Module):
         self.layers = nn.ModuleList()
         in_channels = input_shape[0]
         for i in range(num_stages):
+            out_channels = base_filters * (2 ** i)
             self.layers.append(nn.Sequential(
-                nn.Conv2d(in_channels, base_filters * (2 ** i), 4, stride=2, padding=1),
+                nn.Conv2d(in_channels, out_channels, 4, stride=2, padding=1),
                 nn.LeakyReLU(0.2)
             ))
             if i > 0:
-                self.layers[-1].add_module('bn', nn.BatchNorm2d(base_filters * (2 ** i)))
-            in_channels = base_filters * (2 ** i)
+                self.layers[-1].add_module('bn', nn.BatchNorm2d(out_channels))
+            in_channels = out_channels
 
         self.final_conv = nn.Conv2d(in_channels, 1, 4, padding=1)
 
@@ -152,6 +167,7 @@ class AudioEnhancementGAN(nn.Module):
         real_input = real_input.to(self.device)
         real_target = real_target.to(self.device)
         batch_size = real_input.size(0)
+        print(f"Input shape: {real_input.shape}")
 
         # Progressive growing
         if self.alpha > 0 and self.current_stage < self.num_stages - 1:

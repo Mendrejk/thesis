@@ -6,3 +6,8 @@ matplotlib
 scikit-learn
 torchvggish
 soundfile
+tqdm
+librosa
+psutil
+pydub
+scipy

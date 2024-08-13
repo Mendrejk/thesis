@@ -134,8 +134,8 @@ if __name__ == "__main__":
     print(f"Number of validation batches: {len(val_loader)}")
 
     # Build the GAN
-    generator = Generator().to(device)
-    discriminator = Discriminator().to(device)
+    generator = Generator(input_shape=(2, 1025, 862), base_filters=64, num_stages=4).to(device)
+    discriminator = Discriminator(input_shape=(2, 1025, 862), base_filters=64, num_stages=4).to(device)
     feature_extractor = build_feature_extractor().to(device)
 
     gan = AudioEnhancementGAN(generator, discriminator, feature_extractor, accumulation_steps=8).to(device)
