@@ -138,8 +138,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Audio Enhancement GAN')
     parser.add_argument('--no-cuda', action='store_true', default=False,
                         help='disables CUDA training')
-    parser.add_argument('--batch-size', type=int, default=8, metavar='N',
-                        help='input batch size for training (default: 8)')
+    parser.add_argument('--batch-size', type=int, default=2, metavar='N',
+                        help='input batch size for training (default: 2)')
     args = parser.parse_args()
 
     use_cuda = not args.no_cuda and torch.cuda.is_available()
@@ -179,6 +179,11 @@ if __name__ == "__main__":
     feature_extractor = build_feature_extractor().to(device)
 
     gan = AudioEnhancementGAN(generator, discriminator, feature_extractor, accumulation_steps=8).to(device)
+    gan.compile(
+        g_optimizer=optim.Adam(gan.generator.parameters(), lr=0.0002, betas=(0.5, 0.999)),
+        d_optimizer=optim.Adam(gan.discriminator.parameters(), lr=0.0002, betas=(0.5, 0.999))
+    )
+
     gan.g_optimizer = optim.Adam(gan.generator.parameters(), lr=0.0002, betas=(0.5, 0.999))
     gan.d_optimizer = optim.Adam(gan.discriminator.parameters(), lr=0.0002, betas=(0.5, 0.999))
 

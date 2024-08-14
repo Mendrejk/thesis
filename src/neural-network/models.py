@@ -46,25 +46,24 @@ class Generator(nn.Module):
             nn.LeakyReLU(0.2)
         )
 
-        # Decoder
         self.decoder = nn.ModuleList([
             nn.Sequential(
-                nn.ConvTranspose2d(1280, 256, 4, stride=2, padding=1),
+                nn.ConvTranspose2d(1280, 256, 4, stride=2, padding=1, output_padding=1),
                 nn.BatchNorm2d(256),
                 nn.LeakyReLU(0.2)
             ),
             nn.Sequential(
-                nn.ConvTranspose2d(384, 128, 4, stride=2, padding=1),
+                nn.ConvTranspose2d(384, 128, 4, stride=2, padding=1, output_padding=1),
                 nn.BatchNorm2d(128),
                 nn.LeakyReLU(0.2)
             ),
             nn.Sequential(
-                nn.ConvTranspose2d(192, 64, 4, stride=2, padding=1),
+                nn.ConvTranspose2d(192, 64, 4, stride=2, padding=1, output_padding=1),
                 nn.BatchNorm2d(64),
                 nn.LeakyReLU(0.2)
             ),
             nn.Sequential(
-                nn.ConvTranspose2d(64, 64, 4, stride=2, padding=1),
+                nn.ConvTranspose2d(64, 64, 4, stride=2, padding=1, output_padding=1),
                 nn.BatchNorm2d(64),
                 nn.LeakyReLU(0.2)
             )
@@ -78,27 +77,32 @@ class Generator(nn.Module):
         for i, encoder_layer in enumerate(self.encoder):
             x = encoder_layer(x)
             encoder_outputs.append(x)
-            print(f"Encoder {i} output shape: {x.shape}")
+            # print(f"Encoder {i} output shape: {x.shape}")
 
         # Bottleneck
         x = self.bottleneck(x)
-        print(f"Bottleneck output shape: {x.shape}")
+        # print(f"Bottleneck output shape: {x.shape}")
 
         # Decoder with skip connections
         for i, decoder_layer in enumerate(self.decoder):
             if i < len(self.decoder) - 1:
                 encoder_output = encoder_outputs[-(i + 2)]
-                print(f"Decoder {i} input shape: {x.shape}, skip connection shape: {encoder_output.shape}")
-                x = F.interpolate(x, size=encoder_output.shape[2:], mode='bilinear', align_corners=False)
-                x = torch.cat([x, encoder_output], dim=1)
-                print(f"After concatenation shape: {x.shape}")
-            else:
-                print(f"Decoder {i} input shape: {x.shape}")
-            x = decoder_layer(x)
-            print(f"Decoder {i} output shape: {x.shape}")
+                # print(f"Decoder {i} input shape: {x.shape}, skip connection shape: {encoder_output.shape}")
 
+                # Resize x to match the spatial dimensions of encoder_output
+                x = F.interpolate(x, size=encoder_output.shape[2:], mode='bilinear', align_corners=False)
+
+                x = torch.cat([x, encoder_output], dim=1)
+                # print(f"After concatenation shape: {x.shape}")
+            # else:
+                # print(f"Decoder {i} input shape: {x.shape}")
+            x = decoder_layer(x)
+            # print(f"Decoder {i} output shape: {x.shape}")
+
+        # Ensure the output size matches the input size
+        x = F.interpolate(x, size=self.input_shape[1:], mode='bilinear', align_corners=False)
         x = self.final_conv(x)
-        print(f"Final output shape: {x.shape}")
+        # print(f"Final output shape: {x.shape}")
         return torch.tanh(x)
 
     def get_current_stage_info(self):
@@ -142,10 +146,8 @@ class AudioEnhancementGAN(nn.Module):
         self.accumulation_steps = accumulation_steps
         self.current_step = 0
 
-    def compile(self, g_optimizer, d_optimizer, loss_weights=None):
-        self.g_optimizer = g_optimizer
-        self.d_optimizer = d_optimizer
-        self.loss_weights = loss_weights if loss_weights else {
+        # Initialize loss_weights with default values
+        self.loss_weights = {
             'adversarial': 1.0,
             'content': 100.0,
             'spectral_convergence': 1.0,
@@ -155,6 +157,12 @@ class AudioEnhancementGAN(nn.Module):
             'perceptual': 1.0,
             'time_frequency': 1.0
         }
+
+    def compile(self, g_optimizer, d_optimizer, loss_weights=None):
+        self.g_optimizer = g_optimizer
+        self.d_optimizer = d_optimizer
+        if loss_weights:
+            self.loss_weights.update(loss_weights)
 
     def val_step(self, batch):
         real_input, real_target = batch
@@ -197,7 +205,7 @@ class AudioEnhancementGAN(nn.Module):
         real_input = real_input.to(self.device)
         real_target = real_target.to(self.device)
         batch_size = real_input.size(0)
-        print(f"Input shape: {real_input.shape}")
+        # print(f"Input shape: {real_input.shape}")
 
         # Progressive growing
         if self.alpha > 0 and self.current_stage < self.num_stages - 1:
@@ -233,8 +241,11 @@ class AudioEnhancementGAN(nn.Module):
         fake_features = self.feature_extractor(generated_audio)
 
         g_loss, loss_components = losses.generator_loss(
-            real_target, generated_audio, fake_output,
-            real_features, fake_features, self.loss_weights
+            real_target,  # y_true
+            generated_audio,  # y_pred
+            fake_output,
+            feature_extractor=self.feature_extractor,
+            weights=self.loss_weights
         )
 
         g_loss = g_loss / self.accumulation_steps

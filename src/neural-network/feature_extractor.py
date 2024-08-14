@@ -20,5 +20,15 @@ class VGGishFeatureExtractor(nn.Module):
             x = x[:, 0:1, :, :]  # Use only the magnitude
         return self.vggish(x)
 
+
+class SimpleFeatureExtractor(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, x):
+        # Simply return the input as is
+        return x
+
 def build_feature_extractor():
-    return VGGishFeatureExtractor(pretrained=True)
+    # return VGGishFeatureExtractor(pretrained=True)
+    return SimpleFeatureExtractor()
