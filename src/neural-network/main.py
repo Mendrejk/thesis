@@ -12,6 +12,7 @@ from models import Generator, Discriminator, AudioEnhancementGAN
 from feature_extractor import build_feature_extractor
 from utils import estimate_memory_usage
 from callbacks import LossVisualizationCallback, EarlyStoppingCallback, CheckpointCallback
+from save_tensor_samples import save_raw_tensor_samples
 import time
 from tqdm import tqdm
 import gc
@@ -172,6 +173,7 @@ def train(gan, train_loader, val_loader, num_epochs=50, log_dir='./logs', device
         sample_input = next(iter(val_loader))[0].to(device)
         sample_output = gan.generator(sample_input)
         save_image(sample_output, os.path.join(log_dir, f'sample_epoch_{epoch + 1}.png'))
+        save_raw_tensor_samples(gan.generator, val_loader, num_samples=5, device=device, log_dir=log_dir, epoch=epoch)
 
         overall_progress.update(1)
 
@@ -192,8 +194,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Audio Enhancement GAN')
     parser.add_argument('--no-cuda', action='store_true', default=False,
                         help='disables CUDA training')
-    parser.add_argument('--batch-size', type=int, default=9, metavar='N',
-                        help='input batch size for training (default: 9)')
+    parser.add_argument('--batch-size', type=int, default=18, metavar='N',
+                        help='input batch size for training (default: 18)')
     parser.add_argument('--epochs', type=int, default=50, metavar='N',
                         help='number of epochs to train (default: 50)')
     args = parser.parse_args()
@@ -225,9 +227,14 @@ if __name__ == "__main__":
     feature_extractor = build_feature_extractor().to(device)
 
     gan = AudioEnhancementGAN(generator, discriminator, feature_extractor, accumulation_steps=4).to(device)
+
+    # Adjust learning rates
+    g_lr = 0.0002  # Slightly higher learning rate for generator
+    d_lr = 0.0001  # Lower learning rate for discriminator
+
     gan.compile(
-        g_optimizer=optim.Adam(gan.generator.parameters(), lr=0.0001, betas=(0.5, 0.999)),
-        d_optimizer=optim.Adam(gan.discriminator.parameters(), lr=0.0001, betas=(0.5, 0.999))
+        g_optimizer=optim.Adam(gan.generator.parameters(), lr=g_lr, betas=(0.5, 0.999)),
+        d_optimizer=optim.Adam(gan.discriminator.parameters(), lr=d_lr, betas=(0.5, 0.999))
     )
 
     # Start training
