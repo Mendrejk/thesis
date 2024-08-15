@@ -12,6 +12,11 @@ import time
 from tqdm import tqdm
 import gc
 
+# def print_memory_summary(step):
+    # print(f"\nMemory Summary at {step}:")
+    # print(torch.cuda.memory_summary(device=None, abbreviated=False))
+    # print(f"Allocated: {torch.cuda.memory_allocated() / 1024**3:.2f} GB")
+    # print(f"Cached: {torch.cuda.memory_reserved() / 1024**3:.2f} GB")
 
 class CheckpointCallback:
     def __init__(self, checkpoint_dir):
@@ -21,15 +26,12 @@ class CheckpointCallback:
         checkpoint_path = os.path.join(self.checkpoint_dir, f'checkpoint_epoch_{epoch}.pth')
         state = {
             'epoch': epoch,
-            'stage': model.current_stage,
-            'alpha': float(model.alpha),
             'generator_state_dict': model.generator.state_dict(),
             'discriminator_state_dict': model.discriminator.state_dict(),
             'g_optimizer': model.g_optimizer.state_dict(),
             'd_optimizer': model.d_optimizer.state_dict(),
         }
         torch.save(state, checkpoint_path)
-
 
 def load_checkpoint(checkpoint_dir):
     checkpoints = [f for f in os.listdir(checkpoint_dir) if f.startswith('checkpoint_epoch_')]
@@ -38,93 +40,74 @@ def load_checkpoint(checkpoint_dir):
     latest_checkpoint = max(checkpoints, key=lambda x: int(x.split('_')[-1].split('.')[0]))
     return torch.load(os.path.join(checkpoint_dir, latest_checkpoint))
 
-
-def progressive_training(gan, train_loader, val_loader, initial_epochs=50, progressive_epochs=10, total_stages=4,
-                         log_dir='./logs', device='cuda'):
+def train(gan, train_loader, val_loader, num_epochs=50, log_dir='./logs', device='cuda'):
     checkpoint_dir = os.path.join(log_dir, 'checkpoints')
     os.makedirs(checkpoint_dir, exist_ok=True)
 
     checkpoint = load_checkpoint(checkpoint_dir)
-    start_stage = 0
     start_epoch = 0
 
     if checkpoint:
-        start_stage = checkpoint['stage']
         start_epoch = checkpoint['epoch'] + 1
-        gan.current_stage = start_stage
-        gan.alpha = checkpoint['alpha']
         gan.generator.load_state_dict(checkpoint['generator_state_dict'])
         gan.discriminator.load_state_dict(checkpoint['discriminator_state_dict'])
         gan.g_optimizer.load_state_dict(checkpoint['g_optimizer'])
         gan.d_optimizer.load_state_dict(checkpoint['d_optimizer'])
-        print(f"Resuming from stage {start_stage}, epoch {start_epoch}")
+        print(f"Resuming from epoch {start_epoch}")
 
     checkpoint_callback = CheckpointCallback(checkpoint_dir)
     loss_visualization_callback = LossVisualizationCallback(log_dir=log_dir)
 
-    total_epochs = initial_epochs + progressive_epochs * (total_stages - 1)
-    overall_progress = tqdm(total=total_epochs, desc="Overall Progress", position=0)
-    overall_progress.update(start_stage * progressive_epochs + start_epoch)
+    overall_progress = tqdm(total=num_epochs, desc="Overall Progress", position=0)
+    overall_progress.update(start_epoch)
 
-    for stage in range(start_stage, total_stages):
-        gan.current_stage = stage
-        gan.generator.current_stage = stage
-        print(f"\nTraining stage {stage + 1}/{total_stages}")
-        print(f"Current stage info: {gan.get_current_stage_info()}")
+    # print_memory_summary("Before training loop")
 
-        stage_log_dir = os.path.join(log_dir, f'stage_{stage + 1}')
-        os.makedirs(stage_log_dir, exist_ok=True)
+    for epoch in range(start_epoch, num_epochs):
+        epoch_start_time = time.time()
+        gan.train()
 
-        epochs = initial_epochs if stage == 0 else progressive_epochs
+        # print_memory_summary(f"Start of epoch {epoch + 1}")
 
-        for epoch in range(start_epoch, epochs):
-            epoch_start_time = time.time()
-            gan.train()
+        train_progress = tqdm(train_loader, desc=f"Epoch {epoch + 1}/{num_epochs}", position=1, leave=False)
+        for i, batch in enumerate(train_progress):
+            loss_dict = gan.train_step(batch)
+            train_progress.set_postfix(g_loss=f"{loss_dict['g_loss']:.4f}", d_loss=f"{loss_dict['d_loss']:.4f}")
 
-            train_progress = tqdm(train_loader, desc=f"Epoch {epoch + 1}/{epochs}", position=1, leave=False)
-            for batch in train_progress:
-                loss_dict = gan.train_step(batch)
-                train_progress.set_postfix(g_loss=f"{loss_dict['g_loss']:.4f}", d_loss=f"{loss_dict['d_loss']:.4f}")
+            # if i % 10 == 0:  # Print memory summary every 10 batches
+            #     print_memory_summary(f"During epoch {epoch + 1}, batch {i}")
+        #
+        # print_memory_summary(f"End of epoch {epoch + 1}")
 
-            gan.eval()
-            val_loss = 0
-            with torch.no_grad():
-                for batch in val_loader:
-                    val_loss += gan.val_step(batch)
-            val_loss /= len(val_loader)
+        gan.eval()
+        val_loss = 0
+        with torch.no_grad():
+            for batch in val_loader:
+                val_loss += gan.val_step(batch)
+        val_loss /= len(val_loader)
 
-            epoch_end_time = time.time()
-            epoch_duration = epoch_end_time - epoch_start_time
-            epochs_left = total_epochs - (stage * progressive_epochs + epoch + 1)
-            eta = epoch_duration * epochs_left / 3600  # ETA in hours
+        epoch_end_time = time.time()
+        epoch_duration = epoch_end_time - epoch_start_time
+        epochs_left = num_epochs - (epoch + 1)
+        eta = epoch_duration * epochs_left / 3600  # ETA in hours
 
-            print(f"Epoch {epoch + 1}/{epochs}, Validation Loss: {val_loss:.4f}, ETA: {eta:.2f} hours")
+        print(f"Epoch {epoch + 1}/{num_epochs}, Validation Loss: {val_loss:.4f}, ETA: {eta:.2f} hours")
 
-            checkpoint_callback.on_epoch_end(epoch, gan)
-            loss_visualization_callback.on_epoch_end(epoch, gan)
+        checkpoint_callback.on_epoch_end(epoch, gan)
+        loss_visualization_callback.on_epoch_end(epoch, gan)
 
-            # Save sample outputs
-            sample_input = next(iter(val_loader))[0].to(device)
-            sample_output = gan.generator(sample_input)
-            save_image(sample_output, os.path.join(stage_log_dir, f'sample_epoch_{epoch + 1}.png'))
+        # Save sample outputs
+        sample_input = next(iter(val_loader))[0].to(device)
+        sample_output = gan.generator(sample_input)
+        save_image(sample_output, os.path.join(log_dir, f'sample_epoch_{epoch + 1}.png'))
 
-            overall_progress.update(1)
+        overall_progress.update(1)
 
-            # Clean up GPU memory
-            torch.cuda.empty_cache()
-            gc.collect()
-
-        # Save the model after each stage
-        torch.save(gan.generator.state_dict(), os.path.join(log_dir, f'generator_stage_{stage + 1}.pth'))
-        torch.save(gan.discriminator.state_dict(), os.path.join(log_dir, f'discriminator_stage_{stage + 1}.pth'))
-
-        print(f"Stage {stage + 1} complete!")
-        print(f"Final stage info: {gan.get_current_stage_info()}")
-        start_epoch = 0  # Reset start_epoch for the next stage
-
-        # Clean up GPU memory after each stage
+        # Clean up GPU memory
         torch.cuda.empty_cache()
         gc.collect()
+
+        # print_memory_summary(f"After cleanup, end of epoch {epoch + 1}")
 
     overall_progress.close()
     print("Training complete!")
@@ -133,20 +116,20 @@ def progressive_training(gan, train_loader, val_loader, initial_epochs=50, progr
     torch.cuda.empty_cache()
     gc.collect()
 
+    # print_memory_summary("After training completion")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Audio Enhancement GAN')
     parser.add_argument('--no-cuda', action='store_true', default=False,
                         help='disables CUDA training')
-    parser.add_argument('--batch-size', type=int, default=2, metavar='N',
-                        help='input batch size for training (default: 2)')
+    parser.add_argument('--batch-size', type=int, default=8, metavar='N',
+                        help='input batch size for training (default: 8)')
+    parser.add_argument('--epochs', type=int, default=50, metavar='N',
+                        help='number of epochs to train (default: 50)')
     args = parser.parse_args()
 
     use_cuda = not args.no_cuda and torch.cuda.is_available()
-    if use_cuda:
-        device = torch.device("cuda")  # will use ROCm if available
-    else:
-        device = torch.device("cpu")
+    device = torch.device("cuda" if use_cuda else "cpu")
 
     print(f"Using device: {device}")
 
@@ -160,23 +143,20 @@ if __name__ == "__main__":
     print(f"Estimated memory usage for batch size {args.batch_size}: {memory_usage:.2f} GB")
 
     # Prepare data
-    data_kwargs = {'batch_size': args.batch_size}
-    if use_cuda:
-        cuda_kwargs = {
-            'num_workers': 4,
-            'pin_memory': True,
-        }
-        data_kwargs.update(cuda_kwargs)
-
+    data_kwargs = {'batch_size': args.batch_size, 'num_workers': 4, 'pin_memory': True} if use_cuda else {}
     train_loader, val_loader = prepare_data(converted_dir, vinyl_crackle_dir, **data_kwargs)
 
     print(f"Number of training batches: {len(train_loader)}")
     print(f"Number of validation batches: {len(val_loader)}")
 
+    # print_memory_summary("After data preparation")
+
     # Build the GAN
-    generator = Generator(input_shape=(2, 1025, 862), base_filters=64, num_stages=4).to(device)
-    discriminator = Discriminator(input_shape=(2, 1025, 862), base_filters=64, num_stages=4).to(device)
+    generator = Generator(input_shape=(2, 1025, 862)).to(device)
+    discriminator = Discriminator(input_shape=(2, 1025, 862)).to(device)
     feature_extractor = build_feature_extractor().to(device)
+
+    # print_memory_summary("After model initialization")
 
     gan = AudioEnhancementGAN(generator, discriminator, feature_extractor, accumulation_steps=8).to(device)
     gan.compile(
@@ -184,10 +164,11 @@ if __name__ == "__main__":
         d_optimizer=optim.Adam(gan.discriminator.parameters(), lr=0.0002, betas=(0.5, 0.999))
     )
 
-    gan.g_optimizer = optim.Adam(gan.generator.parameters(), lr=0.0002, betas=(0.5, 0.999))
-    gan.d_optimizer = optim.Adam(gan.discriminator.parameters(), lr=0.0002, betas=(0.5, 0.999))
+    # print_memory_summary("After GAN compilation")
 
-    # Start progressive training
-    progressive_training(gan, train_loader, val_loader, log_dir=log_dir, device=device)
+    # Start training
+    train(gan, train_loader, val_loader, num_epochs=args.epochs, log_dir=log_dir, device=device)
 
     print("Training complete!")
+
+    # print_memory_summary("Final memory summary")
