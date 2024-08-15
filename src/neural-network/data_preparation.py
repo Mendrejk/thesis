@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import torch
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset, DataLoader, Subset
 from sklearn.model_selection import train_test_split
 
 class STFTDataset(Dataset):
@@ -31,7 +31,7 @@ class STFTDataset(Dataset):
         return torch.from_numpy(noisy_data).float(), torch.from_numpy(clean_data).float()
 
 
-def prepare_data(converted_dir, vinyl_crackle_dir, test_size=0.2, **kwargs):
+def prepare_data(converted_dir, vinyl_crackle_dir, test_size=0.2, subset_fraction=1.0, **kwargs):
     converted_files = [os.path.join(converted_dir, f) for f in os.listdir(converted_dir) if f.endswith('_stft.npz')]
     vinyl_crackle_files = [os.path.join(vinyl_crackle_dir, f) for f in os.listdir(vinyl_crackle_dir) if
                            f.endswith('_stft.npz')]
@@ -39,6 +39,12 @@ def prepare_data(converted_dir, vinyl_crackle_dir, test_size=0.2, **kwargs):
     converted_files.sort()
     vinyl_crackle_files.sort()
     assert len(converted_files) == len(vinyl_crackle_files), "Mismatch in number of files"
+
+    # Apply subset if fraction is less than 1
+    if subset_fraction < 1.0:
+        num_samples = int(len(converted_files) * subset_fraction)
+        converted_files = converted_files[:num_samples]
+        vinyl_crackle_files = vinyl_crackle_files[:num_samples]
 
     train_converted, val_converted, train_vinyl, val_vinyl = train_test_split(
         converted_files, vinyl_crackle_files, test_size=test_size, random_state=42)

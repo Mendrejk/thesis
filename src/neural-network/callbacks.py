@@ -1,7 +1,11 @@
 import matplotlib.pyplot as plt
+import numpy as np
 from collections import defaultdict
 import os
 import torch
+import librosa
+import librosa.display
+
 
 class LossVisualizationCallback:
     def __init__(self, log_dir='./logs'):
@@ -18,40 +22,59 @@ class LossVisualizationCallback:
             self.losses[k].append(v)
 
         # Plot losses
-        plt.figure(figsize=(15, 10))
-        for loss_name, loss_values in self.losses.items():
-            plt.plot(self.epochs, loss_values, label=loss_name)
+        self.plot_losses(epoch)
 
-        plt.title('Training Losses')
-        plt.xlabel('Epoch')
-        plt.ylabel('Loss')
-        plt.legend()
-        plt.grid(True)
+    def plot_losses(self, epoch):
+        plt.figure(figsize=(15, 10))
+
+        # Use a simple, widely available style
+        plt.style.use('ggplot')
+
+        for loss_name, loss_values in self.losses.items():
+            plt.plot(self.epochs, loss_values, label=loss_name, linewidth=2)
+
+        plt.title('Training Losses', fontsize=20, fontweight='bold')
+        plt.xlabel('Epoch', fontsize=16)
+        plt.ylabel('Loss', fontsize=16)
+        plt.legend(fontsize=12)
+        plt.tick_params(axis='both', which='major', labelsize=12)
+
+        # Add grid
+        plt.grid(True, linestyle='--', alpha=0.7)
 
         # Save the plot
-        plt.savefig(os.path.join(self.log_dir, f'losses_epoch_{epoch}.png'))
+        plt.tight_layout()
+        plt.savefig(os.path.join(self.log_dir, f'losses_epoch_{epoch}.png'), dpi=300, bbox_inches='tight')
         plt.close()
 
     def on_train_end(self):
         # Plot final losses
-        plt.figure(figsize=(15, 10))
-        for loss_name, loss_values in self.losses.items():
-            plt.plot(self.epochs, loss_values, label=loss_name)
-
-        plt.title('Final Training Losses')
-        plt.xlabel('Epoch')
-        plt.ylabel('Loss')
-        plt.legend()
-        plt.grid(True)
-
-        # Save the final plot
-        plt.savefig(os.path.join(self.log_dir, 'final_losses.png'))
-        plt.close()
+        self.plot_losses(max(self.epochs))
 
         # Print final loss values
         print("Final loss values:")
         for loss_name, loss_values in self.losses.items():
             print(f"{loss_name}: {loss_values[-1]:.4f}")
+
+    def visualize_stft_comparison(self, original_stft, generated_stft, epoch, sr=22050, hop_length=512):
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 8))
+
+        # Plot original STFT
+        img1 = librosa.display.specshow(librosa.amplitude_to_db(np.abs(original_stft), ref=np.max),
+                                        sr=sr, hop_length=hop_length, x_axis='time', y_axis='hz', ax=ax1)
+        ax1.set_title('Original STFT', fontsize=16)
+        fig.colorbar(img1, ax=ax1, format='%+2.0f dB')
+
+        # Plot generated STFT
+        img2 = librosa.display.specshow(librosa.amplitude_to_db(np.abs(generated_stft), ref=np.max),
+                                        sr=sr, hop_length=hop_length, x_axis='time', y_axis='hz', ax=ax2)
+        ax2.set_title('Generated STFT', fontsize=16)
+        fig.colorbar(img2, ax=ax2, format='%+2.0f dB')
+
+        plt.suptitle(f'STFT Comparison - Epoch {epoch}', fontsize=20)
+        plt.tight_layout()
+        plt.savefig(os.path.join(self.log_dir, f'stft_comparison_epoch_{epoch}.png'), dpi=300, bbox_inches='tight')
+        plt.close()
 
 class EarlyStoppingCallback:
     def __init__(self, patience=7, verbose=False, delta=0, path='checkpoint.pt'):

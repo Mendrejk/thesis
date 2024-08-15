@@ -4,7 +4,7 @@ import torch.nn.functional as F
 import logging
 import sys
 
-logging.basicConfig(level=logging.DEBUG, stream=sys.stdout,
+logging.basicConfig(level=logging.ERROR, stream=sys.stdout,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
@@ -113,9 +113,13 @@ def generator_loss(y_true, y_pred, fake_output, feature_extractor=None, weights=
             logger.error(f"Error calculating perceptual loss: {str(e)}")
 
     total_loss = sum(weights[k] * v for k, v in losses.items() if k in weights)
-    logger.info(f"Total generator loss: {total_loss.item()}")
+    # logger.info(f"Total generator loss: {total_loss.item()}")
 
-    return total_loss, losses
+    # Calculate discriminator loss
+    d_loss = adversarial_loss(torch.ones_like(fake_output), fake_output)
+    # logger.info(f"Total discriminator loss: {d_loss.item()}")
+
+    return total_loss, losses, d_loss
 
 
 def discriminator_loss(real_output, fake_output):

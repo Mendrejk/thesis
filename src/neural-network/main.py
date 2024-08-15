@@ -17,65 +17,51 @@ import time
 from tqdm import tqdm
 import gc
 
+import logging
+import matplotlib
+
+matplotlib.use('Agg')
+logging.getLogger('matplotlib.font_manager').disabled = True
+
 
 def get_checkpoint_dirs(log_dir):
-    checkpoint_dirs = [d for d in os.listdir(log_dir) if
-                       os.path.isdir(os.path.join(log_dir, d)) and d.startswith('checkpoints_')]
-    return sorted(checkpoint_dirs, reverse=True)
+    # Look for run directories instead of checkpoint directories
+    run_dirs = [d for d in os.listdir(log_dir) if
+                os.path.isdir(os.path.join(log_dir, d)) and d.startswith('run_')]
+    return sorted(run_dirs, reverse=True)
 
-
-def get_checkpoints(checkpoint_dir):
+def get_checkpoints(run_dir):
+    checkpoint_dir = os.path.join(run_dir, 'checkpoints')
+    if not os.path.exists(checkpoint_dir):
+        return []
     checkpoints = [f for f in os.listdir(checkpoint_dir) if f.startswith('checkpoint_epoch_') and f.endswith('.pth')]
     return sorted(checkpoints, key=lambda x: int(x.split('_')[-1].split('.')[0]))
 
-
-def remove_all_checkpoints(log_dir):
-    checkpoint_dirs = get_checkpoint_dirs(log_dir)
-    if not checkpoint_dirs:
-        print("No checkpoints found.")
-        return
-
-    print("Warning: This will remove all existing checkpoints.")
-    confirm = input("Are you sure you want to proceed? (y/N): ").lower()
-    if confirm != 'y':
-        print("Checkpoint removal cancelled.")
-        return
-
-    confirm_again = input("This action cannot be undone. Type 'DELETE' to confirm: ")
-    if confirm_again != 'DELETE':
-        print("Checkpoint removal cancelled.")
-        return
-
-    for dir_name in checkpoint_dirs:
-        dir_path = os.path.join(log_dir, dir_name)
-        shutil.rmtree(dir_path)
-        print(f"Removed checkpoint directory: {dir_path}")
-
-    print("All checkpoints have been removed.")
-
-
 def select_checkpoint(log_dir):
-    checkpoint_dirs = get_checkpoint_dirs(log_dir)
+    run_dirs = get_checkpoint_dirs(log_dir)
 
-    if not checkpoint_dirs:
-        print("No existing checkpoints found. Starting from scratch.")
+    if not run_dirs:
+        print("No existing runs found. Starting from scratch.")
         return None
 
-    print("Available options:")
-    print("0. Start from scratch")
-    print("1. Remove all checkpoints")
-    for i, d in enumerate(checkpoint_dirs, 2):
+    print("Available runs:")
+    print("0. Start from scratch (default)")
+    print("1. Remove all runs")
+    for i, d in enumerate(run_dirs, 2):
         print(f"{i}. {d}")
 
     while True:
+        choice = input("Enter your choice (press Enter for default): ")
+        if choice == "":
+            return None  # Default option: start from scratch
         try:
-            choice = int(input("Enter your choice (0 to start from scratch, 1 to remove all checkpoints): "))
-            if 0 <= choice <= len(checkpoint_dirs) + 1:
+            choice = int(choice)
+            if 0 <= choice <= len(run_dirs) + 1:
                 break
             else:
                 print("Invalid choice. Please try again.")
         except ValueError:
-            print("Invalid input. Please enter a number.")
+            print("Invalid input. Please enter a number or press Enter for default.")
 
     if choice == 0:
         return None
@@ -83,29 +69,69 @@ def select_checkpoint(log_dir):
         remove_all_checkpoints(log_dir)
         return select_checkpoint(log_dir)  # Recursively call to select after removal
 
-    selected_dir = os.path.join(log_dir, checkpoint_dirs[choice - 2])
-    checkpoints = get_checkpoints(selected_dir)
+    selected_run_dir = os.path.join(log_dir, run_dirs[choice - 2])
+    checkpoints = get_checkpoints(selected_run_dir)
+
+    if not checkpoints:
+        print(f"No checkpoints found in the selected run. Starting from scratch.")
+        return None
 
     print("\nAvailable checkpoints:")
     for i, c in enumerate(checkpoints, 1):
         print(f"{i}. {c}")
 
     while True:
+        checkpoint_choice = input("Enter the number of the checkpoint to use (press Enter for latest): ")
+        if checkpoint_choice == "":
+            checkpoint_choice = len(checkpoints)  # Select the latest checkpoint
         try:
-            checkpoint_choice = int(input("Enter the number of the checkpoint to use: "))
+            checkpoint_choice = int(checkpoint_choice)
             if 1 <= checkpoint_choice <= len(checkpoints):
                 break
             else:
                 print("Invalid choice. Please try again.")
         except ValueError:
-            print("Invalid input. Please enter a number.")
+            print("Invalid input. Please enter a number or press Enter for latest.")
 
-    selected_checkpoint = os.path.join(selected_dir, checkpoints[checkpoint_choice - 1])
+    selected_checkpoint = os.path.join(selected_run_dir, 'checkpoints', checkpoints[checkpoint_choice - 1])
 
     return torch.load(selected_checkpoint)
 
+def remove_all_checkpoints(log_dir):
+    run_dirs = get_checkpoint_dirs(log_dir)
+    if not run_dirs:
+        print("No runs found.")
+        return
+
+    print("Warning: This will remove all existing runs and their checkpoints.")
+    confirm = input("Are you sure you want to proceed? (y/N): ").lower()
+    if confirm != 'y':
+        print("Removal cancelled.")
+        return
+
+    confirm_again = input("This action cannot be undone. Type 'DELETE' to confirm: ")
+    if confirm_again != 'DELETE':
+        print("Removal cancelled.")
+        return
+
+    for dir_name in run_dirs:
+        dir_path = os.path.join(log_dir, dir_name)
+        shutil.rmtree(dir_path)
+        print(f"Removed run directory: {dir_path}")
+
+    print("All runs and checkpoints have been removed.")
+
 
 def train(gan, train_loader, val_loader, num_epochs=50, log_dir='./logs', device='cuda'):
+    # Create a unique folder for this run
+    run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+    run_log_dir = os.path.join(log_dir, f'run_{run_id}')
+    os.makedirs(run_log_dir, exist_ok=True)
+
+    # Create a new checkpoint directory for this run
+    checkpoint_dir = os.path.join(run_log_dir, 'checkpoints')
+    os.makedirs(checkpoint_dir, exist_ok=True)
+
     checkpoint = select_checkpoint(log_dir)
     start_epoch = 0
 
@@ -116,19 +142,13 @@ def train(gan, train_loader, val_loader, num_epochs=50, log_dir='./logs', device
         gan.g_optimizer.load_state_dict(checkpoint['g_optimizer'])
         gan.d_optimizer.load_state_dict(checkpoint['d_optimizer'])
         print(f"Resuming from epoch {start_epoch}")
-        # Use the same checkpoint directory
-        checkpoint_dir = os.path.dirname(checkpoint['checkpoint_path'])
     else:
         print("Starting training from scratch")
-        # Create a new checkpoint directory
-        current_date = datetime.now().strftime("%Y%m%d")
-        checkpoint_dir = os.path.join(log_dir, f'checkpoints_{current_date}')
-        os.makedirs(checkpoint_dir, exist_ok=True)
 
     checkpoint_callback = CheckpointCallback(checkpoint_dir)
-    loss_visualization_callback = LossVisualizationCallback(log_dir=log_dir)
+    loss_visualization_callback = LossVisualizationCallback(log_dir=run_log_dir)
     early_stopping_callback = EarlyStoppingCallback(patience=5, verbose=True, delta=0.01,
-                                                    path=os.path.join(log_dir, 'best_model.pt'))
+                                                    path=os.path.join(run_log_dir, 'best_model.pt'))
 
     overall_progress = tqdm(total=num_epochs, desc="Overall Progress", position=0)
     overall_progress.update(start_epoch)
@@ -143,7 +163,9 @@ def train(gan, train_loader, val_loader, num_epochs=50, log_dir='./logs', device
             loss_dict = gan.train_step(batch)
             for k, v in loss_dict.items():
                 epoch_losses[k] += v
-            train_progress.set_postfix(g_loss=f"{loss_dict['g_loss']:.4f}", d_loss=f"{loss_dict['d_loss']:.4f}")
+            train_progress.set_postfix(g_loss=f"{loss_dict['g_loss']:.4f}",
+                                       d_loss_from_d=f"{loss_dict['d_loss_from_d']:.4f}",
+                                       d_loss_from_g=f"{loss_dict['d_loss_from_g']:.4f}")
 
         # Average the losses
         avg_losses = {k: v / len(train_loader) for k, v in epoch_losses.items()}
@@ -169,11 +191,19 @@ def train(gan, train_loader, val_loader, num_epochs=50, log_dir='./logs', device
             print("Early stopping triggered")
             break
 
-        # Save sample outputs
-        sample_input = next(iter(val_loader))[0].to(device)
+        # Save sample outputs and visualize STFT comparison
+        sample_input, sample_target = next(iter(val_loader))
+        sample_input = sample_input.to(device)
+        sample_target = sample_target.to(device)
         sample_output = gan.generator(sample_input)
-        save_image(sample_output, os.path.join(log_dir, f'sample_epoch_{epoch + 1}.png'))
-        save_raw_tensor_samples(gan.generator, val_loader, num_samples=5, device=device, log_dir=log_dir, epoch=epoch)
+
+        loss_visualization_callback.visualize_stft_comparison(
+            sample_target[0, 0].cpu().numpy(),
+            sample_output[0, 0].detach().cpu().numpy(),
+            epoch
+        )
+
+        save_raw_tensor_samples(gan.generator, val_loader, num_samples=5, device=device, log_dir=run_log_dir, epoch=epoch)
 
         overall_progress.update(1)
 
@@ -189,13 +219,38 @@ def train(gan, train_loader, val_loader, num_epochs=50, log_dir='./logs', device
     torch.cuda.empty_cache()
     gc.collect()
 
+    overall_progress.close()
+    loss_visualization_callback.on_train_end()
+    print("Training complete!")
+
+    # Final cleanup
+    torch.cuda.empty_cache()
+    gc.collect()
+
+
+def get_subset_fraction():
+    while True:
+        choice = input("Do you want to use all data or a subset? (ALL/subset): ").lower()
+        if choice == 'subset':
+            while True:
+                try:
+                    fraction = float(input("Enter the fraction of data to use (e.g., 0.01 for 1%): "))
+                    if 0 < fraction <= 1:
+                        return fraction
+                    else:
+                        print("Please enter a value between 0 and 1.")
+                except ValueError:
+                    print("Invalid input. Please enter a number between 0 and 1.")
+        else:
+            return 1.0
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Audio Enhancement GAN')
     parser.add_argument('--no-cuda', action='store_true', default=False,
                         help='disables CUDA training')
-    parser.add_argument('--batch-size', type=int, default=18, metavar='N',
-                        help='input batch size for training (default: 18)')
+    parser.add_argument('--batch-size', type=int, default=12, metavar='N',
+                        help='input batch size for training (default: 12)')
     parser.add_argument('--epochs', type=int, default=50, metavar='N',
                         help='number of epochs to train (default: 50)')
     args = parser.parse_args()
@@ -210,12 +265,16 @@ if __name__ == "__main__":
     log_dir = './logs'
     os.makedirs(log_dir, exist_ok=True)
 
+    # Prompt user for subset choice
+    subset_fraction = get_subset_fraction()
+    print(f"Using {subset_fraction * 100}% of the dataset.")
+
     # Estimate memory usage
     memory_usage = estimate_memory_usage(args.batch_size)
     print(f"Estimated memory usage for batch size {args.batch_size}: {memory_usage:.2f} GB")
 
-    # Prepare data
-    data_kwargs = {'batch_size': args.batch_size, 'num_workers': 8, 'pin_memory': True} if use_cuda else {}
+    # Prepare data with user-chosen subset option
+    data_kwargs = {'batch_size': args.batch_size, 'num_workers': 8, 'pin_memory': True, 'subset_fraction': subset_fraction} if use_cuda else {'subset_fraction': subset_fraction}
     train_loader, val_loader = prepare_data(converted_dir, vinyl_crackle_dir, **data_kwargs)
 
     print(f"Number of training batches: {len(train_loader)}")
