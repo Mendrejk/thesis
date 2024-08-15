@@ -11,6 +11,8 @@ class LossVisualizationCallback:
         os.makedirs(log_dir, exist_ok=True)
 
     def on_epoch_end(self, epoch, logs=None):
+        if logs is None:
+            logs = {}
         self.epochs.append(epoch)
         for k, v in logs.items():
             self.losses[k].append(v)
@@ -51,7 +53,7 @@ class LossVisualizationCallback:
         for loss_name, loss_values in self.losses.items():
             print(f"{loss_name}: {loss_values[-1]:.4f}")
 
-class EarlyStopping:
+class EarlyStoppingCallback:
     def __init__(self, patience=7, verbose=False, delta=0, path='checkpoint.pt'):
         self.patience = patience
         self.verbose = verbose
@@ -62,7 +64,7 @@ class EarlyStopping:
         self.delta = delta
         self.path = path
 
-    def __call__(self, val_loss, model):
+    def __call__(self, epoch, val_loss, model):
         score = -val_loss
 
         if self.best_score is None:
@@ -79,8 +81,26 @@ class EarlyStopping:
             self.save_checkpoint(val_loss, model)
             self.counter = 0
 
+        return self.early_stop
+
     def save_checkpoint(self, val_loss, model):
         if self.verbose:
             print(f'Validation loss decreased ({self.val_loss_min:.6f} --> {val_loss:.6f}). Saving model ...')
         torch.save(model.state_dict(), self.path)
         self.val_loss_min = val_loss
+
+class CheckpointCallback:
+    def __init__(self, checkpoint_dir):
+        self.checkpoint_dir = checkpoint_dir
+        os.makedirs(checkpoint_dir, exist_ok=True)
+
+    def __call__(self, epoch, model):
+        checkpoint_path = os.path.join(self.checkpoint_dir, f'checkpoint_epoch_{epoch}.pth')
+        state = {
+            'epoch': epoch,
+            'generator_state_dict': model.generator.state_dict(),
+            'discriminator_state_dict': model.discriminator.state_dict(),
+            'g_optimizer': model.g_optimizer.state_dict(),
+            'd_optimizer': model.d_optimizer.state_dict(),
+        }
+        torch.save(state, checkpoint_path)

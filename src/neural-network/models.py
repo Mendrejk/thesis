@@ -12,17 +12,17 @@ class Generator(nn.Module):
         self.encoder = nn.ModuleList([
             nn.Sequential(
                 nn.Conv2d(2, 32, 3, stride=2, padding=1),
-                nn.BatchNorm2d(32),
+                nn.InstanceNorm2d(32),
                 nn.LeakyReLU(0.2)
             ),
             nn.Sequential(
                 nn.Conv2d(32, 64, 3, stride=2, padding=1),
-                nn.BatchNorm2d(64),
+                nn.InstanceNorm2d(64),
                 nn.LeakyReLU(0.2)
             ),
             nn.Sequential(
                 nn.Conv2d(64, 128, 3, stride=2, padding=1),
-                nn.BatchNorm2d(128),
+                nn.InstanceNorm2d(128),
                 nn.LeakyReLU(0.2)
             )
         ])
@@ -30,7 +30,7 @@ class Generator(nn.Module):
         # Bottleneck
         self.bottleneck = nn.Sequential(
             nn.Conv2d(128, 256, 3, padding=1),
-            nn.BatchNorm2d(256),
+            nn.InstanceNorm2d(256),
             nn.LeakyReLU(0.2)
         )
 
@@ -38,17 +38,17 @@ class Generator(nn.Module):
         self.decoder = nn.ModuleList([
             nn.Sequential(
                 nn.ConvTranspose2d(256 + 128, 64, 4, stride=2, padding=1),
-                nn.BatchNorm2d(64),
+                nn.InstanceNorm2d(64),
                 nn.LeakyReLU(0.2)
             ),
             nn.Sequential(
                 nn.ConvTranspose2d(64 + 64, 32, 4, stride=2, padding=1),
-                nn.BatchNorm2d(32),
+                nn.InstanceNorm2d(32),
                 nn.LeakyReLU(0.2)
             ),
             nn.Sequential(
                 nn.ConvTranspose2d(32 + 32, 32, 4, stride=2, padding=1),
-                nn.BatchNorm2d(32),
+                nn.InstanceNorm2d(32),
                 nn.LeakyReLU(0.2)
             )
         ])
@@ -77,27 +77,26 @@ class Generator(nn.Module):
         x = self.final_conv(x)
         return torch.tanh(x)
 
+
 class Discriminator(nn.Module):
     def __init__(self, input_shape=(2, 1025, 862)):
         super().__init__()
         self.layers = nn.ModuleList([
             nn.Sequential(
-                nn.Conv2d(2, 32, 4, stride=2, padding=1),
+                nn.utils.spectral_norm(nn.Conv2d(2, 32, 4, stride=2, padding=1)),
                 nn.LeakyReLU(0.2)
             ),
             nn.Sequential(
-                nn.Conv2d(32, 64, 4, stride=2, padding=1),
-                nn.BatchNorm2d(64),
+                nn.utils.spectral_norm(nn.Conv2d(32, 64, 4, stride=2, padding=1)),
                 nn.LeakyReLU(0.2)
             ),
             nn.Sequential(
-                nn.Conv2d(64, 128, 4, stride=2, padding=1),
-                nn.BatchNorm2d(128),
+                nn.utils.spectral_norm(nn.Conv2d(64, 128, 4, stride=2, padding=1)),
                 nn.LeakyReLU(0.2)
             )
         ])
 
-        self.final_conv = nn.Conv2d(128, 1, 4, padding=1)
+        self.final_conv = nn.utils.spectral_norm(nn.Conv2d(128, 1, 4, padding=1))
 
     def forward(self, x):
         for layer in self.layers:
@@ -116,12 +115,12 @@ class AudioEnhancementGAN(nn.Module):
         # Initialize loss_weights with default values
         self.loss_weights = {
             'adversarial': 1.0,
-            'content': 100.0,
-            'spectral_convergence': 1.0,
-            'spectral_flatness': 1.0,
-            'phase_aware': 1.0,
+            'content': 10.0,
+            'spectral_convergence': 0.1,
+            'spectral_flatness': 0.1,
+            'phase_aware': 0.1,
             'multi_resolution_stft': 1.0,
-            'perceptual': 1.0,
+            'perceptual': 0.1,
             'time_frequency': 1.0
         }
 
@@ -178,6 +177,7 @@ class AudioEnhancementGAN(nn.Module):
         d_loss.backward()
 
         if (self.current_step + 1) % self.accumulation_steps == 0:
+            torch.nn.utils.clip_grad_norm_(self.discriminator.parameters(), max_norm=1.0)
             self.d_optimizer.step()
             self.d_optimizer.zero_grad()
 
