@@ -5,27 +5,60 @@ import os
 import torch
 import librosa
 import librosa.display
-
+import csv
+from scipy import signal
 
 class LossVisualizationCallback:
-    def __init__(self, log_dir='./logs'):
+    def __init__(self, log_dir):
         self.log_dir = log_dir
         self.losses = defaultdict(list)
-        self.epochs = []
-        os.makedirs(log_dir, exist_ok=True)
+        self.loss_components = {}
+        self.csv_file = os.path.join(log_dir, 'loss_log.csv')
+        self.epochs = []  # Add this line
+        self.initialize_csv()
+
+    def initialize_csv(self):
+        with open(self.csv_file, 'w', newline='') as file:
+            writer = csv.writer(file)
+            header = ['epoch', 'g_loss', 'd_loss', 'val_loss']
+            writer.writerow(header)
 
     def on_epoch_end(self, epoch, logs=None):
-        if logs is None:
-            logs = {}
-        self.epochs.append(epoch)
-        for k, v in logs.items():
-            self.losses[k].append(v)
+        self.epochs.append(epoch)  # Add this line
+        if logs is not None:
+            for k, v in logs.items():
+                if k.startswith('loss_component_'):
+                    component_name = k[15:]  # Remove 'loss_component_' prefix
+                    if component_name not in self.loss_components:
+                        self.loss_components[component_name] = []
+                    self.loss_components[component_name].append(v)
+                else:
+                    self.losses[k].append(v)
 
-        # Plot main losses
+            # Log to CSV
+            self.log_to_csv(epoch, logs)
+
         self.plot_losses(epoch)
-
-        # Plot individual loss components
         self.plot_loss_components(epoch)
+
+    def log_to_csv(self, epoch, logs):
+        with open(self.csv_file, 'a', newline='') as file:
+            writer = csv.writer(file)
+            row = [epoch, logs.get('g_loss', ''), logs.get('d_loss', ''), logs.get('val_loss', '')]
+
+            # Add loss components
+            for component in self.loss_components.keys():
+                if f'loss_component_{component}' not in self.csv_file:
+                    # If this is a new component, add it to the header
+                    with open(self.csv_file, 'r') as read_file:
+                        header = next(csv.reader(read_file))
+                    header.append(f'loss_component_{component}')
+                    with open(self.csv_file, 'w', newline='') as write_file:
+                        csv.writer(write_file).writerow(header)
+
+                row.append(logs.get(f'loss_component_{component}', ''))
+
+            writer.writerow(row)
 
     def plot_losses(self, epoch):
         plt.figure(figsize=(15, 10))
@@ -51,9 +84,8 @@ class LossVisualizationCallback:
         plt.figure(figsize=(15, 10))
         plt.style.use('ggplot')
 
-        for loss_name, loss_values in self.losses.items():
-            if loss_name.startswith('loss_component_'):
-                plt.plot(self.epochs, loss_values, label=loss_name.replace('loss_component_', ''), linewidth=2)
+        for component_name, component_values in self.loss_components.items():
+            plt.plot(self.epochs, component_values, label=component_name, linewidth=2)
 
         plt.title('Individual Loss Components', fontsize=20, fontweight='bold')
         plt.xlabel('Epoch', fontsize=16)

@@ -26,10 +26,12 @@ logging.getLogger('matplotlib.font_manager').disabled = True
 
 
 def get_checkpoint_dirs(log_dir):
-    # Look for run directories instead of checkpoint directories
+    # Look for run directories
     run_dirs = [d for d in os.listdir(log_dir) if
                 os.path.isdir(os.path.join(log_dir, d)) and d.startswith('run_')]
-    return sorted(run_dirs, reverse=True)
+    # Sort the directories based on the date and run number
+    return sorted(run_dirs, key=lambda x: (x.split('_')[1], int(x.split('_')[2])), reverse=True)
+
 
 def get_checkpoints(run_dir):
     checkpoint_dir = os.path.join(run_dir, 'checkpoints')
@@ -137,10 +139,15 @@ def train(gan, train_loader, val_loader, num_epochs=50, log_dir='./logs', device
         run_log_dir = selected_run_dir
     else:
         print("Starting training from scratch")
-        # Create a unique folder for this new run
-        run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
-        run_log_dir = os.path.join(log_dir, f'run_{run_id}')
-        os.makedirs(run_log_dir, exist_ok=True)
+        # Create a unique folder for this new run with an iterative number
+        current_date = datetime.now().strftime("%Y%m%d")
+        run_number = 0
+        while True:
+            run_log_dir = os.path.join(log_dir, f'run_{current_date}_{run_number}')
+            if not os.path.exists(run_log_dir):
+                os.makedirs(run_log_dir, exist_ok=True)
+                break
+            run_number += 1
 
     # Create a new checkpoint directory for this run
     checkpoint_dir = os.path.join(run_log_dir, 'checkpoints')
@@ -178,7 +185,11 @@ def train(gan, train_loader, val_loader, num_epochs=50, log_dir='./logs', device
         avg_loss_components = {k: v / len(train_loader) for k, v in epoch_loss_components.items()}
 
         # Combine avg_losses and avg_loss_components
-        combined_losses = {**avg_losses, **{f'loss_component_{k}': v for k, v in avg_loss_components.items()}}
+        combined_losses = {
+            **avg_losses,
+            **{f'loss_component_{k}': v for k, v in avg_loss_components.items()},
+            'd_loss_from_d': avg_losses.get('d_loss_from_d', 0)  # Add this line
+        }
 
         gan.eval()
         val_loss = 0
@@ -186,6 +197,8 @@ def train(gan, train_loader, val_loader, num_epochs=50, log_dir='./logs', device
             for batch in val_loader:
                 val_loss += gan.val_step(batch)
         val_loss /= len(val_loader)
+
+        combined_losses['val_loss'] = val_loss
 
         g_scheduler = ReduceLROnPlateau(gan.g_optimizer, mode='min', factor=0.5, patience=3, verbose=True)
         d_scheduler = ReduceLROnPlateau(gan.d_optimizer, mode='min', factor=0.5, patience=3, verbose=True)
@@ -202,7 +215,7 @@ def train(gan, train_loader, val_loader, num_epochs=50, log_dir='./logs', device
 
         # Call callbacks
         checkpoint_callback(epoch, gan)
-        loss_visualization_callback.on_epoch_end(epoch, {**combined_losses, 'val_loss': val_loss})
+        loss_visualization_callback.on_epoch_end(epoch, combined_losses)
         if early_stopping_callback(epoch, val_loss, gan):
             print("Early stopping triggered")
             break

@@ -137,16 +137,16 @@ class AudioEnhancementGAN(nn.Module):
         self.loss_history = defaultdict(list)
         self.loss_components = defaultdict(list)
 
-        # Initialize loss_weights with default values
         self.loss_weights = {
             'adversarial': 1.0,
-            'content': 15.0,  # Increased from 10.0
-            'spectral_convergence': 0.2,  # Increased from 0.1
-            'spectral_flatness': 0.2,  # Increased from 0.1
-            'phase_aware': 0.2,  # Increased from 0.1
-            'multi_resolution_stft': 1.5,  # Increased from 1.0
-            'perceptual': 0.2,  # Increased from 0.1
-            'time_frequency': 1.5  # Increased from 1.0
+            'content': 20.0,
+            'spectral_convergence': 0.5,
+            'spectral_flatness': 0.5,
+            'phase_aware': 0.5,
+            'multi_resolution_stft': 2.0,
+            'perceptual': 0.5,
+            'time_frequency': 2.0,
+            'snr': 8.0
         }
 
         # Add discriminator update frequency
@@ -195,6 +195,9 @@ class AudioEnhancementGAN(nn.Module):
         real_input = real_input.to(self.device)
         real_target = real_target.to(self.device)
 
+        # Estimate noise (simple method: assume input - target is noise)
+        noise_estimate = real_input - real_target
+
         d_loss = 0
         d_loss_from_d_step = 0
 
@@ -242,8 +245,9 @@ class AudioEnhancementGAN(nn.Module):
             real_target,
             generated_audio,
             fake_output,
+            noise_estimate,
             feature_extractor=self.feature_extractor,
-            weights=self.loss_weights
+            weights=self.loss_weights  # Pass the weights from the class
         )
 
         # Store individual loss components
@@ -301,7 +305,11 @@ class AudioEnhancementGAN(nn.Module):
         generated_audio = self.generator(real_input)
         fake_output = self.discriminator(generated_audio)
 
+        # Estimate noise (simple method: assume input - target is noise)
+        noise_estimate = real_input - real_target
+
         g_loss, _, _ = losses.generator_loss(real_target, generated_audio, fake_output,
+                                             noise_estimate,  # Add this line
                                              feature_extractor=self.feature_extractor,
                                              weights=self.loss_weights)
 

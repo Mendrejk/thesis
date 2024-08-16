@@ -71,21 +71,27 @@ def time_frequency_loss(y_true, y_pred):
     return total_loss
 
 
-def generator_loss(y_true, y_pred, fake_output, feature_extractor=None, weights=None):
-    # logger.debug(
-    #     f"generator_loss input shapes: y_true {y_true.shape}, y_pred {y_pred.shape}, fake_output {fake_output.shape}")
+def snr_loss(y_true, y_pred, noise_estimate):
+    """
+    Compute the Signal-to-Noise Ratio (SNR) loss.
 
+    Args:
+    y_true (torch.Tensor): The target (clean) audio signal.
+    y_pred (torch.Tensor): The predicted (generated) audio signal.
+    noise_estimate (torch.Tensor): An estimate of the noise in the input signal.
+
+    Returns:
+    torch.Tensor: The SNR loss.
+    """
+    signal_power = torch.mean(y_true ** 2, dim=-1)
+    noise_power = torch.mean((y_pred - y_true) ** 2, dim=-1)
+    snr = 10 * torch.log10(signal_power / (noise_power + 1e-10))
+    return -torch.mean(snr)  # We want to maximize SNR, so we minimize negative SNR
+
+
+def generator_loss(y_true, y_pred, fake_output, noise_estimate, feature_extractor=None, weights=None):
     if weights is None:
-        weights = {
-            'adversarial': 1.0,
-            'content': 100.0,
-            'spectral_convergence': 1.0,
-            'spectral_flatness': 1.0,
-            'phase_aware': 1.0,
-            'multi_resolution_stft': 1.0,
-            'perceptual': 1.0,
-            'time_frequency': 1.0
-        }
+        raise ValueError("Weights must be provided for generator loss calculation")
 
     losses = {}
     for loss_name, loss_fn in [
@@ -95,12 +101,12 @@ def generator_loss(y_true, y_pred, fake_output, feature_extractor=None, weights=
         ('spectral_flatness', lambda: spectral_flatness_loss(y_true, y_pred)),
         ('phase_aware', lambda: phase_aware_loss(y_true, y_pred)),
         ('multi_resolution_stft', lambda: multi_resolution_stft_loss(y_true, y_pred)),
-        ('time_frequency', lambda: time_frequency_loss(y_true, y_pred))
+        ('time_frequency', lambda: time_frequency_loss(y_true, y_pred)),
+        ('snr', lambda: snr_loss(y_true, y_pred, noise_estimate))
     ]:
         try:
             loss_value = loss_fn()
             losses[loss_name] = loss_value
-            # logger.debug(f"{loss_name} loss: {loss_value.item()}")
         except Exception as e:
             logger.error(f"Error calculating {loss_name} loss: {str(e)}")
 
@@ -108,16 +114,12 @@ def generator_loss(y_true, y_pred, fake_output, feature_extractor=None, weights=
         try:
             perceptual_loss_fn = PerceptualLoss(feature_extractor)
             losses['perceptual'] = perceptual_loss_fn(y_true, y_pred)
-            # logger.debug(f"perceptual loss: {losses['perceptual'].item()}")
         except Exception as e:
             logger.error(f"Error calculating perceptual loss: {str(e)}")
 
     total_loss = sum(weights[k] * v for k, v in losses.items() if k in weights)
-    # logger.info(f"Total generator loss: {total_loss.item()}")
 
-    # Calculate discriminator loss
     d_loss = adversarial_loss(torch.ones_like(fake_output), fake_output)
-    # logger.info(f"Total discriminator loss: {d_loss.item()}")
 
     return total_loss, losses, d_loss
 
