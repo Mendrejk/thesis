@@ -15,49 +15,49 @@ class Generator(nn.Module):
         # Encoder
         self.encoder = nn.ModuleList([
             nn.Sequential(
-                nn.Conv2d(2, 16, 3, stride=2, padding=1),
-                nn.InstanceNorm2d(16),
+                nn.Conv2d(2, 24, 3, stride=2, padding=1),
+                nn.InstanceNorm2d(24),
                 nn.LeakyReLU(0.2)
             ),
             nn.Sequential(
-                nn.Conv2d(16, 32, 3, stride=2, padding=1),
-                nn.InstanceNorm2d(32),
+                nn.Conv2d(24, 48, 3, stride=2, padding=1),
+                nn.InstanceNorm2d(48),
                 nn.LeakyReLU(0.2)
             ),
             nn.Sequential(
-                nn.Conv2d(32, 64, 3, stride=2, padding=1),
-                nn.InstanceNorm2d(64),
+                nn.Conv2d(48, 96, 3, stride=2, padding=1),
+                nn.InstanceNorm2d(96),
                 nn.LeakyReLU(0.2)
             )
         ])
 
-        # Bottleneck
+        # Bottleneck with residual blocks
         self.bottleneck = nn.Sequential(
-            nn.Conv2d(64, 128, 3, padding=1),
-            nn.InstanceNorm2d(128),
-            nn.LeakyReLU(0.2)
+            ResidualBlock(96),
+            ResidualBlock(96),
+            ResidualBlock(96)
         )
 
         # Decoder
         self.decoder = nn.ModuleList([
             nn.Sequential(
-                nn.ConvTranspose2d(128 + 64, 32, 4, stride=2, padding=1),
-                nn.InstanceNorm2d(32),
+                nn.ConvTranspose2d(96 + 96, 48, 4, stride=2, padding=1),
+                nn.InstanceNorm2d(48),
                 nn.LeakyReLU(0.2)
             ),
             nn.Sequential(
-                nn.ConvTranspose2d(32 + 32, 16, 4, stride=2, padding=1),
-                nn.InstanceNorm2d(16),
+                nn.ConvTranspose2d(48 + 48, 24, 4, stride=2, padding=1),
+                nn.InstanceNorm2d(24),
                 nn.LeakyReLU(0.2)
             ),
             nn.Sequential(
-                nn.ConvTranspose2d(16 + 16, 16, 4, stride=2, padding=1),
-                nn.InstanceNorm2d(16),
+                nn.ConvTranspose2d(24 + 24, 24, 4, stride=2, padding=1),
+                nn.InstanceNorm2d(24),
                 nn.LeakyReLU(0.2)
             )
         ])
 
-        self.final_conv = nn.Conv2d(16, input_shape[0], 3, padding=1)
+        self.final_conv = nn.Conv2d(24, input_shape[0], 3, padding=1)
 
     def forward(self, x):
         # Encoder
@@ -81,25 +81,44 @@ class Generator(nn.Module):
         x = self.final_conv(x)
         return torch.tanh(x)
 
+class ResidualBlock(nn.Module):
+    def __init__(self, channels):
+        super().__init__()
+        self.conv1 = nn.Conv2d(channels, channels, 3, padding=1)
+        self.conv2 = nn.Conv2d(channels, channels, 3, padding=1)
+        self.norm1 = nn.InstanceNorm2d(channels)
+        self.norm2 = nn.InstanceNorm2d(channels)
+        self.relu = nn.LeakyReLU(0.2)
+
+    def forward(self, x):
+        residual = x
+        x = self.relu(self.norm1(self.conv1(x)))
+        x = self.norm2(self.conv2(x))
+        return x + residual
+
 class Discriminator(nn.Module):
     def __init__(self, input_shape=(2, 1025, 862)):
         super().__init__()
         self.layers = nn.ModuleList([
             nn.Sequential(
-                nn.utils.spectral_norm(nn.Conv2d(2, 16, 4, stride=2, padding=1)),
+                nn.utils.spectral_norm(nn.Conv2d(2, 24, 4, stride=2, padding=1)),
                 nn.LeakyReLU(0.2)
             ),
             nn.Sequential(
-                nn.utils.spectral_norm(nn.Conv2d(16, 32, 4, stride=2, padding=1)),
+                nn.utils.spectral_norm(nn.Conv2d(24, 48, 4, stride=2, padding=1)),
                 nn.LeakyReLU(0.2)
             ),
             nn.Sequential(
-                nn.utils.spectral_norm(nn.Conv2d(32, 64, 4, stride=2, padding=1)),
+                nn.utils.spectral_norm(nn.Conv2d(48, 96, 4, stride=2, padding=1)),
+                nn.LeakyReLU(0.2)
+            ),
+            nn.Sequential(
+                nn.utils.spectral_norm(nn.Conv2d(96, 96, 4, stride=2, padding=1)),
                 nn.LeakyReLU(0.2)
             )
         ])
 
-        self.final_conv = nn.utils.spectral_norm(nn.Conv2d(64, 1, 4, padding=1))
+        self.final_conv = nn.utils.spectral_norm(nn.Conv2d(96, 1, 4, padding=1))
 
     def forward(self, x):
         for layer in self.layers:
@@ -116,17 +135,18 @@ class AudioEnhancementGAN(nn.Module):
         self.accumulation_steps = accumulation_steps
         self.current_step = 0
         self.loss_history = defaultdict(list)
+        self.loss_components = defaultdict(list)
 
         # Initialize loss_weights with default values
         self.loss_weights = {
             'adversarial': 1.0,
-            'content': 10.0,
-            'spectral_convergence': 0.1,
-            'spectral_flatness': 0.1,
-            'phase_aware': 0.1,
-            'multi_resolution_stft': 1.0,
-            'perceptual': 0.1,
-            'time_frequency': 1.0
+            'content': 15.0,  # Increased from 10.0
+            'spectral_convergence': 0.2,  # Increased from 0.1
+            'spectral_flatness': 0.2,  # Increased from 0.1
+            'phase_aware': 0.2,  # Increased from 0.1
+            'multi_resolution_stft': 1.5,  # Increased from 1.0
+            'perceptual': 0.2,  # Increased from 0.1
+            'time_frequency': 1.5  # Increased from 1.0
         }
 
         # Add discriminator update frequency
@@ -218,13 +238,17 @@ class AudioEnhancementGAN(nn.Module):
         generated_audio = self.generator(real_input)
         fake_output = self.discriminator(generated_audio)
 
-        g_loss, _, d_loss_from_g = losses.generator_loss(
+        g_loss, loss_components, d_loss_from_g = losses.generator_loss(
             real_target,
             generated_audio,
             fake_output,
             feature_extractor=self.feature_extractor,
             weights=self.loss_weights
         )
+
+        # Store individual loss components
+        for key, value in loss_components.items():
+            self.loss_components[key].append(value.item())
 
         g_loss = g_loss / self.accumulation_steps
         g_loss.backward()
@@ -262,8 +286,12 @@ class AudioEnhancementGAN(nn.Module):
         return {
             "g_loss": g_loss.item() * self.accumulation_steps,
             "d_loss_from_d": self.last_d_loss,
-            "d_loss_from_g": d_loss_from_g.item()
+            "d_loss_from_g": d_loss_from_g.item(),
+            "loss_components": {k: v[-1] for k, v in self.loss_components.items()}
         }
+
+    def reset_loss_components(self):
+        self.loss_components.clear()
 
     def val_step(self, batch):
         real_input, real_target = batch

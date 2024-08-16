@@ -21,35 +21,55 @@ class LossVisualizationCallback:
         for k, v in logs.items():
             self.losses[k].append(v)
 
-        # Plot losses
+        # Plot main losses
         self.plot_losses(epoch)
+
+        # Plot individual loss components
+        self.plot_loss_components(epoch)
 
     def plot_losses(self, epoch):
         plt.figure(figsize=(15, 10))
-
-        # Use a simple, widely available style
         plt.style.use('ggplot')
 
-        for loss_name, loss_values in self.losses.items():
-            plt.plot(self.epochs, loss_values, label=loss_name, linewidth=2)
+        main_losses = ['g_loss', 'd_loss_from_d', 'd_loss_from_g', 'val_loss']
+        for loss_name in main_losses:
+            if loss_name in self.losses:
+                plt.plot(self.epochs, self.losses[loss_name], label=loss_name, linewidth=2)
 
-        plt.title('Training Losses', fontsize=20, fontweight='bold')
+        plt.title('Main Training Losses', fontsize=20, fontweight='bold')
         plt.xlabel('Epoch', fontsize=16)
         plt.ylabel('Loss', fontsize=16)
         plt.legend(fontsize=12)
         plt.tick_params(axis='both', which='major', labelsize=12)
-
-        # Add grid
         plt.grid(True, linestyle='--', alpha=0.7)
 
-        # Save the plot
         plt.tight_layout()
-        plt.savefig(os.path.join(self.log_dir, f'losses_epoch_{epoch}.png'), dpi=300, bbox_inches='tight')
+        plt.savefig(os.path.join(self.log_dir, f'main_losses_epoch_{epoch}.png'), dpi=300, bbox_inches='tight')
+        plt.close()
+
+    def plot_loss_components(self, epoch):
+        plt.figure(figsize=(15, 10))
+        plt.style.use('ggplot')
+
+        for loss_name, loss_values in self.losses.items():
+            if loss_name.startswith('loss_component_'):
+                plt.plot(self.epochs, loss_values, label=loss_name.replace('loss_component_', ''), linewidth=2)
+
+        plt.title('Individual Loss Components', fontsize=20, fontweight='bold')
+        plt.xlabel('Epoch', fontsize=16)
+        plt.ylabel('Loss', fontsize=16)
+        plt.legend(fontsize=12, loc='center left', bbox_to_anchor=(1, 0.5))
+        plt.tick_params(axis='both', which='major', labelsize=12)
+        plt.grid(True, linestyle='--', alpha=0.7)
+
+        plt.tight_layout()
+        plt.savefig(os.path.join(self.log_dir, f'loss_components_epoch_{epoch}.png'), dpi=300, bbox_inches='tight')
         plt.close()
 
     def on_train_end(self):
         # Plot final losses
         self.plot_losses(max(self.epochs))
+        self.plot_loss_components(max(self.epochs))
 
         # Print final loss values
         print("Final loss values:")

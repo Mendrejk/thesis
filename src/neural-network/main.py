@@ -13,6 +13,7 @@ from feature_extractor import build_feature_extractor
 from utils import estimate_memory_usage
 from callbacks import LossVisualizationCallback, EarlyStoppingCallback, CheckpointCallback
 from save_tensor_samples import save_raw_tensor_samples
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 import time
 from tqdm import tqdm
 import gc
@@ -42,7 +43,7 @@ def select_checkpoint(log_dir):
 
     if not run_dirs:
         print("No existing runs found. Starting from scratch.")
-        return None
+        return None, None
 
     print("Available runs:")
     print("0. Start from scratch (default)")
@@ -53,7 +54,7 @@ def select_checkpoint(log_dir):
     while True:
         choice = input("Enter your choice (press Enter for default): ")
         if choice == "":
-            return None  # Default option: start from scratch
+            return None, None  # Default option: start from scratch
         try:
             choice = int(choice)
             if 0 <= choice <= len(run_dirs) + 1:
@@ -64,7 +65,7 @@ def select_checkpoint(log_dir):
             print("Invalid input. Please enter a number or press Enter for default.")
 
     if choice == 0:
-        return None
+        return None, None
     elif choice == 1:
         remove_all_checkpoints(log_dir)
         return select_checkpoint(log_dir)  # Recursively call to select after removal
@@ -74,7 +75,7 @@ def select_checkpoint(log_dir):
 
     if not checkpoints:
         print(f"No checkpoints found in the selected run. Starting from scratch.")
-        return None
+        return None, None
 
     print("\nAvailable checkpoints:")
     for i, c in enumerate(checkpoints, 1):
@@ -95,7 +96,7 @@ def select_checkpoint(log_dir):
 
     selected_checkpoint = os.path.join(selected_run_dir, 'checkpoints', checkpoints[checkpoint_choice - 1])
 
-    return torch.load(selected_checkpoint)
+    return torch.load(selected_checkpoint), selected_run_dir
 
 def remove_all_checkpoints(log_dir):
     run_dirs = get_checkpoint_dirs(log_dir)
@@ -123,16 +124,7 @@ def remove_all_checkpoints(log_dir):
 
 
 def train(gan, train_loader, val_loader, num_epochs=50, log_dir='./logs', device='cuda'):
-    # Create a unique folder for this run
-    run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
-    run_log_dir = os.path.join(log_dir, f'run_{run_id}')
-    os.makedirs(run_log_dir, exist_ok=True)
-
-    # Create a new checkpoint directory for this run
-    checkpoint_dir = os.path.join(run_log_dir, 'checkpoints')
-    os.makedirs(checkpoint_dir, exist_ok=True)
-
-    checkpoint = select_checkpoint(log_dir)
+    checkpoint, selected_run_dir = select_checkpoint(log_dir)
     start_epoch = 0
 
     if checkpoint:
@@ -142,8 +134,17 @@ def train(gan, train_loader, val_loader, num_epochs=50, log_dir='./logs', device
         gan.g_optimizer.load_state_dict(checkpoint['g_optimizer'])
         gan.d_optimizer.load_state_dict(checkpoint['d_optimizer'])
         print(f"Resuming from epoch {start_epoch}")
+        run_log_dir = selected_run_dir
     else:
         print("Starting training from scratch")
+        # Create a unique folder for this new run
+        run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+        run_log_dir = os.path.join(log_dir, f'run_{run_id}')
+        os.makedirs(run_log_dir, exist_ok=True)
+
+    # Create a new checkpoint directory for this run
+    checkpoint_dir = os.path.join(run_log_dir, 'checkpoints')
+    os.makedirs(checkpoint_dir, exist_ok=True)
 
     checkpoint_callback = CheckpointCallback(checkpoint_dir)
     loss_visualization_callback = LossVisualizationCallback(log_dir=run_log_dir)
@@ -159,16 +160,25 @@ def train(gan, train_loader, val_loader, num_epochs=50, log_dir='./logs', device
 
         train_progress = tqdm(train_loader, desc=f"Epoch {epoch + 1}/{num_epochs}", position=1, leave=False)
         epoch_losses = defaultdict(float)
+        epoch_loss_components = defaultdict(float)
         for i, batch in enumerate(train_progress):
             loss_dict = gan.train_step(batch)
             for k, v in loss_dict.items():
-                epoch_losses[k] += v
+                if k != 'loss_components':
+                    epoch_losses[k] += v
+                else:
+                    for comp_k, comp_v in v.items():
+                        epoch_loss_components[comp_k] += comp_v
             train_progress.set_postfix(g_loss=f"{loss_dict['g_loss']:.4f}",
                                        d_loss_from_d=f"{loss_dict['d_loss_from_d']:.4f}",
                                        d_loss_from_g=f"{loss_dict['d_loss_from_g']:.4f}")
 
         # Average the losses
         avg_losses = {k: v / len(train_loader) for k, v in epoch_losses.items()}
+        avg_loss_components = {k: v / len(train_loader) for k, v in epoch_loss_components.items()}
+
+        # Combine avg_losses and avg_loss_components
+        combined_losses = {**avg_losses, **{f'loss_component_{k}': v for k, v in avg_loss_components.items()}}
 
         gan.eval()
         val_loss = 0
@@ -176,6 +186,12 @@ def train(gan, train_loader, val_loader, num_epochs=50, log_dir='./logs', device
             for batch in val_loader:
                 val_loss += gan.val_step(batch)
         val_loss /= len(val_loader)
+
+        g_scheduler = ReduceLROnPlateau(gan.g_optimizer, mode='min', factor=0.5, patience=3, verbose=True)
+        d_scheduler = ReduceLROnPlateau(gan.d_optimizer, mode='min', factor=0.5, patience=3, verbose=True)
+
+        g_scheduler.step(val_loss)
+        d_scheduler.step(val_loss)
 
         epoch_end_time = time.time()
         epoch_duration = epoch_end_time - epoch_start_time
@@ -186,10 +202,12 @@ def train(gan, train_loader, val_loader, num_epochs=50, log_dir='./logs', device
 
         # Call callbacks
         checkpoint_callback(epoch, gan)
-        loss_visualization_callback.on_epoch_end(epoch, {**avg_losses, 'val_loss': val_loss})
+        loss_visualization_callback.on_epoch_end(epoch, {**combined_losses, 'val_loss': val_loss})
         if early_stopping_callback(epoch, val_loss, gan):
             print("Early stopping triggered")
             break
+
+        gan.reset_loss_components()
 
         # Save sample outputs and visualize STFT comparison
         sample_input, sample_target = next(iter(val_loader))
@@ -249,8 +267,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Audio Enhancement GAN')
     parser.add_argument('--no-cuda', action='store_true', default=False,
                         help='disables CUDA training')
-    parser.add_argument('--batch-size', type=int, default=12, metavar='N',
-                        help='input batch size for training (default: 12)')
+    parser.add_argument('--batch-size', type=int, default=7, metavar='N',
+                        help='input batch size for training (default: 7)')
     parser.add_argument('--epochs', type=int, default=50, metavar='N',
                         help='number of epochs to train (default: 50)')
     args = parser.parse_args()
@@ -288,8 +306,8 @@ if __name__ == "__main__":
     gan = AudioEnhancementGAN(generator, discriminator, feature_extractor, accumulation_steps=4).to(device)
 
     # Adjust learning rates
-    g_lr = 0.0002  # Slightly higher learning rate for generator
-    d_lr = 0.0001  # Lower learning rate for discriminator
+    g_lr = 0.0001  # Reduced from 0.0002
+    d_lr = 0.00005  # Reduced from 0.0001
 
     gan.compile(
         g_optimizer=optim.Adam(gan.generator.parameters(), lr=g_lr, betas=(0.5, 0.999)),
