@@ -139,7 +139,6 @@ def train(gan, train_loader, val_loader, num_epochs=50, log_dir='./logs', device
         run_log_dir = selected_run_dir
     else:
         print("Starting training from scratch")
-        # Create a unique folder for this new run with an iterative number
         current_date = datetime.now().strftime("%Y%m%d")
         run_number = 0
         while True:
@@ -149,7 +148,6 @@ def train(gan, train_loader, val_loader, num_epochs=50, log_dir='./logs', device
                 break
             run_number += 1
 
-    # Create a new checkpoint directory for this run
     checkpoint_dir = os.path.join(run_log_dir, 'checkpoints')
     os.makedirs(checkpoint_dir, exist_ok=True)
 
@@ -177,8 +175,8 @@ def train(gan, train_loader, val_loader, num_epochs=50, log_dir='./logs', device
                     for comp_k, comp_v in v.items():
                         epoch_loss_components[comp_k] += comp_v
             train_progress.set_postfix(g_loss=f"{loss_dict['g_loss']:.4f}",
-                                       d_loss_from_d=f"{loss_dict['d_loss_from_d']:.4f}",
-                                       d_loss_from_g=f"{loss_dict['d_loss_from_g']:.4f}")
+                                       d_loss=f"{loss_dict['d_loss_from_d']:.4f}",
+                                       g_loss_adv=f"{loss_dict['g_loss_adv']:.4f}")
 
         # Average the losses
         avg_losses = {k: v / len(train_loader) for k, v in epoch_losses.items()}
@@ -188,7 +186,6 @@ def train(gan, train_loader, val_loader, num_epochs=50, log_dir='./logs', device
         combined_losses = {
             **avg_losses,
             **{f'loss_component_{k}': v for k, v in avg_loss_components.items()},
-            'd_loss_from_d': avg_losses.get('d_loss_from_d', 0)  # Add this line
         }
 
         gan.eval()
@@ -250,14 +247,6 @@ def train(gan, train_loader, val_loader, num_epochs=50, log_dir='./logs', device
     torch.cuda.empty_cache()
     gc.collect()
 
-    overall_progress.close()
-    loss_visualization_callback.on_train_end()
-    print("Training complete!")
-
-    # Final cleanup
-    torch.cuda.empty_cache()
-    gc.collect()
-
 
 def get_subset_fraction():
     while True:
@@ -280,8 +269,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Audio Enhancement GAN')
     parser.add_argument('--no-cuda', action='store_true', default=False,
                         help='disables CUDA training')
-    parser.add_argument('--batch-size', type=int, default=7, metavar='N',
-                        help='input batch size for training (default: 7)')
+    parser.add_argument('--batch-size', type=int, default=16, metavar='N',
+                        help='input batch size for training (default: 16)')
     parser.add_argument('--epochs', type=int, default=50, metavar='N',
                         help='number of epochs to train (default: 50)')
     args = parser.parse_args()
@@ -319,12 +308,12 @@ if __name__ == "__main__":
     gan = AudioEnhancementGAN(generator, discriminator, feature_extractor, accumulation_steps=4).to(device)
 
     # Adjust learning rates
-    g_lr = 0.0001  # Reduced from 0.0002
-    d_lr = 0.00005  # Reduced from 0.0001
+    g_lr = 0.0001  # was 0.0002
+    d_lr = 0.0001  # was 0.0004
 
     gan.compile(
-        g_optimizer=optim.Adam(gan.generator.parameters(), lr=g_lr, betas=(0.5, 0.999)),
-        d_optimizer=optim.Adam(gan.discriminator.parameters(), lr=d_lr, betas=(0.5, 0.999))
+        g_optimizer=optim.Adam(gan.generator.parameters(), lr=g_lr, betas=(0.0, 0.9)),
+        d_optimizer=optim.Adam(gan.discriminator.parameters(), lr=d_lr, betas=(0.0, 0.9))
     )
 
     # Start training

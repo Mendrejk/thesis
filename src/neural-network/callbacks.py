@@ -24,7 +24,7 @@ class LossVisualizationCallback:
             writer.writerow(header)
 
     def on_epoch_end(self, epoch, logs=None):
-        self.epochs.append(epoch)  # Add this line
+        self.epochs.append(epoch)
         if logs is not None:
             for k, v in logs.items():
                 if k.startswith('loss_component_'):
@@ -38,8 +38,10 @@ class LossVisualizationCallback:
             # Log to CSV
             self.log_to_csv(epoch, logs)
 
-        self.plot_losses(epoch)
-        self.plot_loss_components(epoch)
+        # Only plot if we have data
+        if self.epochs:
+            self.plot_losses(epoch)
+            self.plot_loss_components(epoch)
 
     def log_to_csv(self, epoch, logs):
         with open(self.csv_file, 'a', newline='') as file:
@@ -61,12 +63,15 @@ class LossVisualizationCallback:
             writer.writerow(row)
 
     def plot_losses(self, epoch):
+        if not self.epochs:  # If there's no data to plot, return early
+            return
+
         plt.figure(figsize=(15, 10))
         plt.style.use('ggplot')
 
         main_losses = ['g_loss', 'd_loss_from_d', 'd_loss_from_g', 'val_loss']
         for loss_name in main_losses:
-            if loss_name in self.losses:
+            if loss_name in self.losses and len(self.losses[loss_name]) > 0:
                 plt.plot(self.epochs, self.losses[loss_name], label=loss_name, linewidth=2)
 
         plt.title('Main Training Losses', fontsize=20, fontweight='bold')
@@ -81,11 +86,15 @@ class LossVisualizationCallback:
         plt.close()
 
     def plot_loss_components(self, epoch):
+        if not self.epochs:  # If there's no data to plot, return early
+            return
+
         plt.figure(figsize=(15, 10))
         plt.style.use('ggplot')
 
         for component_name, component_values in self.loss_components.items():
-            plt.plot(self.epochs, component_values, label=component_name, linewidth=2)
+            if len(component_values) > 0:
+                plt.plot(self.epochs, component_values, label=component_name, linewidth=2)
 
         plt.title('Individual Loss Components', fontsize=20, fontweight='bold')
         plt.xlabel('Epoch', fontsize=16)

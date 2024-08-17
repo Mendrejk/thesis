@@ -20,11 +20,11 @@ def content_loss(y_true, y_pred, loss_type='l1'):
         raise ValueError("Invalid loss_type. Choose 'l1' or 'l2'.")
 
 def spectral_convergence_loss(y_true, y_pred):
-    return torch.norm(torch.abs(y_true) - torch.abs(y_pred)) / torch.norm(torch.abs(y_true))
+    return torch.norm(torch.abs(y_true) - torch.abs(y_pred)) / (torch.norm(torch.abs(y_true)) + 1e-7)
 
 def spectral_flatness_loss(y_true, y_pred):
-    true_flatness = torch.exp(torch.mean(torch.log(torch.abs(y_true) + 1e-10), dim=-1)) / (torch.mean(torch.abs(y_true), dim=-1) + 1e-10)
-    pred_flatness = torch.exp(torch.mean(torch.log(torch.abs(y_pred) + 1e-10), dim=-1)) / (torch.mean(torch.abs(y_pred), dim=-1) + 1e-10)
+    true_flatness = torch.exp(torch.mean(torch.log(torch.abs(y_true) + 1e-7), dim=-1)) / (torch.mean(torch.abs(y_true), dim=-1) + 1e-7)
+    pred_flatness = torch.exp(torch.mean(torch.log(torch.abs(y_pred) + 1e-7), dim=-1)) / (torch.mean(torch.abs(y_pred), dim=-1) + 1e-7)
     return torch.mean(torch.abs(true_flatness - pred_flatness))
 
 def phase_aware_loss(y_true, y_pred):
@@ -106,16 +106,18 @@ def generator_loss(y_true, y_pred, fake_output, noise_estimate, feature_extracto
     ]:
         try:
             loss_value = loss_fn()
+            if torch.isnan(loss_value):
+                print(f"NaN detected in {loss_name} loss")
             losses[loss_name] = loss_value
         except Exception as e:
-            logger.error(f"Error calculating {loss_name} loss: {str(e)}")
+            print(f"Error calculating {loss_name} loss: {str(e)}")
 
     if feature_extractor:
         try:
             perceptual_loss_fn = PerceptualLoss(feature_extractor)
             losses['perceptual'] = perceptual_loss_fn(y_true, y_pred)
         except Exception as e:
-            logger.error(f"Error calculating perceptual loss: {str(e)}")
+            print(f"Error calculating perceptual loss: {str(e)}")
 
     total_loss = sum(weights[k] * v for k, v in losses.items() if k in weights)
 
