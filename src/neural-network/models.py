@@ -136,6 +136,7 @@ class AudioEnhancementGAN(nn.Module):
         }
 
         self.d_update_frequency = 1
+        self.d_update_counter = 0  # Counter to keep track of iterations
         self.last_d_loss = 0
 
         self.d_loss_threshold = 0.5
@@ -175,60 +176,76 @@ class AudioEnhancementGAN(nn.Module):
             return new_value
         return self.ma_beta * ma + (1 - self.ma_beta) * new_value
 
+    def check_tensor(self, tensor, tensor_name):
+        if torch.isnan(tensor).any():
+            logger.error(f"NaN detected in {tensor_name}")
+            return False
+        if torch.isinf(tensor).any():
+            logger.error(f"Inf detected in {tensor_name}")
+            return False
+        return True
+
     def train_step(self, data):
         real_input, real_target = data
         real_input = real_input.to(self.device)
         real_target = real_target.to(self.device)
 
+        if not self.check_tensor(real_input, "real_input") or not self.check_tensor(real_target, "real_target"):
+            return self.return_nan_results()
+
         noise_estimate = real_input - real_target
 
         # Train the discriminator
-        self.d_optimizer.zero_grad()
-        generated_audio = self.generator(real_input)
+        d_loss_from_d_step = 0
+        if self.d_update_counter % self.d_update_frequency == 0:
+            self.d_optimizer.zero_grad()
+            generated_audio = self.generator(real_input)
 
-        real_target_noisy = self.add_instance_noise(real_target)
-        generated_audio_noisy = self.add_instance_noise(generated_audio.detach())
+            if not self.check_tensor(generated_audio, "generated_audio (discriminator step)"):
+                return self.return_nan_results()
 
-        real_output = self.discriminator(real_target_noisy)
-        fake_output = self.discriminator(generated_audio_noisy)
+            real_target_noisy = self.add_instance_noise(real_target)
+            generated_audio_noisy = self.add_instance_noise(generated_audio.detach())
 
-        # Least Squares GAN loss replaced with hinge loss
-        d_loss_real = F.relu(1.0 - real_output).mean()
-        d_loss_fake = F.relu(1.0 + fake_output).mean()
-        d_loss = d_loss_real + d_loss_fake
-        gp = self.gradient_penalty(real_target, generated_audio.detach())
-        d_loss = d_loss + 10 * gp
+            real_output = self.discriminator(real_target_noisy)
+            fake_output = self.discriminator(generated_audio_noisy)
 
-        # Check for NaN or Inf in discriminator loss
-        if torch.isnan(d_loss) or torch.isinf(d_loss):
-            print("NaN or Inf detected in discriminator loss. Skipping update.")
-            return {
-                "g_loss": float('nan'),
-                "d_loss_from_d": float('nan'),
-                "g_loss_adv": float('nan'),
-                "loss_components": {k: float('nan') for k in self.loss_components.keys()}
-            }
+            d_loss_real = F.relu(1.0 - real_output).mean()
+            d_loss_fake = F.relu(1.0 + fake_output).mean()
+            d_loss = d_loss_real + d_loss_fake
+            gp = self.gradient_penalty(real_target, generated_audio.detach())
+            d_loss = d_loss + 10 * gp
 
-        d_loss = d_loss / self.accumulation_steps
-        d_loss.backward()
+            if not self.check_tensor(d_loss, "d_loss"):
+                return self.return_nan_results()
 
-        if (self.current_step + 1) % self.accumulation_steps == 0:
-            torch.nn.utils.clip_grad_norm_(self.discriminator.parameters(), max_norm=1.0)
-            self.d_optimizer.step()
+            d_loss = d_loss / self.accumulation_steps
+            d_loss.backward()
 
-            self.d_loss_ma = self.update_moving_average(self.d_loss_ma, d_loss.item())
+            if (self.current_step + 1) % self.accumulation_steps == 0:
+                torch.nn.utils.clip_grad_norm_(self.discriminator.parameters(), max_norm=1.0)
+                self.d_optimizer.step()
 
-            if self.d_loss_ma < self.d_loss_threshold:
-                for param_group in self.d_optimizer.param_groups:
-                    param_group['lr'] *= 0.99
+                self.d_loss_ma = self.update_moving_average(self.d_loss_ma, d_loss.item())
 
-        d_loss_from_d_step = d_loss.item() * self.accumulation_steps
-        self.last_d_loss = d_loss_from_d_step
+                if self.d_loss_ma < self.d_loss_threshold:
+                    for param_group in self.d_optimizer.param_groups:
+                        param_group['lr'] *= 0.99
+
+            d_loss_from_d_step = d_loss.item() * self.accumulation_steps
+            self.last_d_loss = d_loss_from_d_step
 
         # Train the generator
         self.g_optimizer.zero_grad()
         generated_audio = self.generator(real_input)
+
+        if not self.check_tensor(generated_audio, "generated_audio (generator step)"):
+            return self.return_nan_results()
+
         fake_output = self.discriminator(generated_audio)
+
+        if not self.check_tensor(fake_output, "fake_output (generator step)"):
+            return self.return_nan_results()
 
         # Least Squares GAN loss for generator replaced with hinge loss
         g_loss_adv = -fake_output.mean()
@@ -242,20 +259,14 @@ class AudioEnhancementGAN(nn.Module):
             weights=self.loss_weights
         )
 
+        if not self.check_tensor(g_loss, "g_loss"):
+            return self.return_nan_results()
+
         g_loss = g_loss + g_loss_adv
 
-        # Check for NaN or Inf in generator loss
-        if torch.isnan(g_loss) or torch.isinf(g_loss):
-            print("NaN or Inf detected in generator loss. Skipping update.")
-            return {
-                "g_loss": float('nan'),
-                "d_loss_from_d": self.last_d_loss,
-                "g_loss_adv": float('nan'),
-                "loss_components": {k: float('nan') for k in self.loss_components.keys()}
-            }
-
-        # Store individual loss components
         for key, value in loss_components.items():
+            if not self.check_tensor(value, f"loss_component_{key}"):
+                return self.return_nan_results()
             self.loss_components[key].append(value.item())
 
         g_loss = g_loss / self.accumulation_steps
@@ -275,6 +286,7 @@ class AudioEnhancementGAN(nn.Module):
               f"D_loss: {self.last_d_loss:.4f}, G_loss_adv: {g_loss_adv.item():.4f}")
 
         self.current_step += 1
+        self.d_update_counter += 1  # Increment the counter
         self.instance_noise *= self.instance_noise_anneal_rate
 
         return {
@@ -292,8 +304,18 @@ class AudioEnhancementGAN(nn.Module):
         real_input = real_input.to(self.device)
         real_target = real_target.to(self.device)
 
+        if not self.check_tensor(real_input, "val_real_input") or not self.check_tensor(real_target, "val_real_target"):
+            return float('nan')
+
         generated_audio = self.generator(real_input)
+
+        if not self.check_tensor(generated_audio, "val_generated_audio"):
+            return float('nan')
+
         fake_output = self.discriminator(generated_audio)
+
+        if not self.check_tensor(fake_output, "val_fake_output"):
+            return float('nan')
 
         noise_estimate = real_input - real_target
 
@@ -302,7 +324,18 @@ class AudioEnhancementGAN(nn.Module):
                                              feature_extractor=self.feature_extractor,
                                              weights=self.loss_weights)
 
+        if not self.check_tensor(g_loss, "val_g_loss"):
+            return float('nan')
+
         return g_loss.item()
+
+    def return_nan_results(self):
+        return {
+            "g_loss": float('nan'),
+            "d_loss_from_d": float('nan'),
+            "g_loss_adv": float('nan'),
+            "loss_components": {k: float('nan') for k in self.loss_components.keys()}
+        }
 
     def to(self, device):
         self.device = device

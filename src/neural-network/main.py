@@ -226,8 +226,9 @@ def train(gan, train_loader, val_loader, num_epochs=50, log_dir='./logs', device
         sample_output = gan.generator(sample_input)
 
         loss_visualization_callback.visualize_stft_comparison(
-            sample_target[0, 0].cpu().numpy(),
-            sample_output[0, 0].detach().cpu().numpy(),
+            sample_target[0, 0].cpu().numpy(),  # Original (undamaged) STFT
+            sample_input[0, 0].cpu().numpy(),   # Damaged STFT
+            sample_output[0, 0].detach().cpu().numpy(),  # Generated (restored) STFT
             epoch
         )
 
@@ -269,8 +270,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Audio Enhancement GAN')
     parser.add_argument('--no-cuda', action='store_true', default=False,
                         help='disables CUDA training')
-    parser.add_argument('--batch-size', type=int, default=16, metavar='N',
-                        help='input batch size for training (default: 16)')
+    parser.add_argument('--batch-size', type=int, default=12, metavar='N',
+                        help='input batch size for training (default: 12)')
     parser.add_argument('--epochs', type=int, default=50, metavar='N',
                         help='number of epochs to train (default: 50)')
     args = parser.parse_args()
