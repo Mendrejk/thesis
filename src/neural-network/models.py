@@ -9,6 +9,12 @@ import losses
 import logging
 logger = logging.getLogger(__name__)
 
+# Set numba logger to WARNING level
+logging.getLogger('numba').setLevel(logging.WARNING)
+
+# Set matplotlib logger to WARNING level to reduce clutter
+logging.getLogger('matplotlib').setLevel(logging.WARNING)
+
 class Generator(nn.Module):
     def __init__(self, input_shape=(2, 1025, 862)):
         super().__init__()
@@ -16,39 +22,42 @@ class Generator(nn.Module):
 
         # Encoder
         self.encoder = nn.ModuleList([
-            nn.Sequential(
-                spectral_norm(nn.Conv2d(2, 16, 3, stride=2, padding=1)),
-                nn.BatchNorm2d(16),
-                nn.LeakyReLU(0.2)
-            ),
-            nn.Sequential(
-                spectral_norm(nn.Conv2d(16, 32, 3, stride=2, padding=1)),
-                nn.BatchNorm2d(32),
-                nn.LeakyReLU(0.2)
-            )
+            self.encoder_block(2, 32),
+            self.encoder_block(32, 64),
+            self.encoder_block(64, 128),
+            self.encoder_block(128, 256)
         ])
 
         # Bottleneck
         self.bottleneck = nn.Sequential(
-            ResidualBlock(32),
-            ResidualBlock(32)
+            ResidualBlock(256),
+            ResidualBlock(256),
+            ResidualBlock(256)
         )
 
         # Decoder
         self.decoder = nn.ModuleList([
-            nn.Sequential(
-                spectral_norm(nn.ConvTranspose2d(32 + 32, 16, 4, stride=2, padding=1)),
-                nn.BatchNorm2d(16),
-                nn.LeakyReLU(0.2)
-            ),
-            nn.Sequential(
-                spectral_norm(nn.ConvTranspose2d(16 + 16, 16, 4, stride=2, padding=1)),
-                nn.BatchNorm2d(16),
-                nn.LeakyReLU(0.2)
-            )
+            self.decoder_block(256 + 256, 128),
+            self.decoder_block(128 + 128, 64),
+            self.decoder_block(64 + 64, 32),
+            self.decoder_block(32 + 32, 32)
         ])
 
-        self.final_conv = spectral_norm(nn.Conv2d(16, input_shape[0], 3, padding=1))
+        self.final_conv = spectral_norm(nn.Conv2d(32, input_shape[0], 3, padding=1))
+
+    def encoder_block(self, in_channels, out_channels):
+        return nn.Sequential(
+            spectral_norm(nn.Conv2d(in_channels, out_channels, 3, stride=2, padding=1)),
+            nn.BatchNorm2d(out_channels),
+            nn.LeakyReLU(0.2)
+        )
+
+    def decoder_block(self, in_channels, out_channels):
+        return nn.Sequential(
+            spectral_norm(nn.ConvTranspose2d(in_channels, out_channels, 4, stride=2, padding=1)),
+            nn.BatchNorm2d(out_channels),
+            nn.LeakyReLU(0.2)
+        )
 
     def forward(self, x):
         # Encoder
@@ -62,15 +71,38 @@ class Generator(nn.Module):
 
         # Decoder with skip connections
         for i, decoder_layer in enumerate(self.decoder):
-            encoder_output = encoder_outputs[-(i + 1)]
-            x = F.interpolate(x, size=encoder_output.shape[2:], mode='bilinear', align_corners=False)
-            x = torch.cat([x, encoder_output], dim=1)
+            x = F.interpolate(x, size=encoder_outputs[-i-1].shape[2:], mode='bilinear', align_corners=False)
+            x = torch.cat([x, encoder_outputs[-i-1]], dim=1)
             x = decoder_layer(x)
 
         # Ensure the output size matches the input size
         x = F.interpolate(x, size=self.input_shape[1:], mode='bilinear', align_corners=False)
         x = self.final_conv(x)
         return torch.tanh(x)
+
+class Discriminator(nn.Module):
+    def __init__(self, input_shape=(2, 1025, 862)):
+        super().__init__()
+        self.layers = nn.ModuleList([
+            self.discriminator_block(2, 32),
+            self.discriminator_block(32, 64),
+            self.discriminator_block(64, 128),
+            self.discriminator_block(128, 256),
+            self.discriminator_block(256, 512)
+        ])
+
+        self.final_conv = spectral_norm(nn.Conv2d(512, 1, 4, padding=1))
+
+    def discriminator_block(self, in_channels, out_channels):
+        return nn.Sequential(
+            spectral_norm(nn.Conv2d(in_channels, out_channels, 4, stride=2, padding=1)),
+            nn.LeakyReLU(0.2)
+        )
+
+    def forward(self, x):
+        for layer in self.layers:
+            x = layer(x)
+        return self.final_conv(x)
 
 class ResidualBlock(nn.Module):
     def __init__(self, channels):
@@ -87,30 +119,6 @@ class ResidualBlock(nn.Module):
         x = self.norm2(self.conv2(x))
         return x + residual
 
-class Discriminator(nn.Module):
-    def __init__(self, input_shape=(2, 1025, 862)):
-        super().__init__()
-        self.layers = nn.ModuleList([
-            nn.Sequential(
-                spectral_norm(nn.Conv2d(2, 16, 4, stride=2, padding=1)),
-                nn.LeakyReLU(0.2)
-            ),
-            nn.Sequential(
-                spectral_norm(nn.Conv2d(16, 32, 4, stride=2, padding=1)),
-                nn.LeakyReLU(0.2)
-            ),
-            nn.Sequential(
-                spectral_norm(nn.Conv2d(32, 64, 4, stride=2, padding=1)),
-                nn.LeakyReLU(0.2)
-            )
-        ])
-
-        self.final_conv = spectral_norm(nn.Conv2d(64, 1, 4, padding=1))
-
-    def forward(self, x):
-        for layer in self.layers:
-            x = layer(x)
-        return self.final_conv(x)
 
 class AudioEnhancementGAN(nn.Module):
     def __init__(self, generator, discriminator, feature_extractor=None, accumulation_steps=1):
@@ -125,6 +133,7 @@ class AudioEnhancementGAN(nn.Module):
 
         self.loss_weights = {
             'adversarial': 1.0,
+            'wasserstein': 1.0,  # Added Wasserstein loss weight
             'content': 10.0,  # Increased
             'spectral_convergence': 0.1,  # Decreased
             'spectral_flatness': 0.1,  # Decreased
@@ -185,27 +194,51 @@ class AudioEnhancementGAN(nn.Module):
             return False
         return True
 
-    def train_step(self, data):
-        real_input, real_target = data
-        real_input = real_input.to(self.device)
-        real_target = real_target.to(self.device)
+    def denormalize_stft(self, normalized_stft, original_stft):
+        # Denormalize the magnitude
+        mag_norm, phase = normalized_stft[:, 0], normalized_stft[:, 1]
+        mag_original = original_stft[:, 0]
 
-        if not self.check_tensor(real_input, "real_input") or not self.check_tensor(real_target, "real_target"):
+        mag_min = mag_original.min(dim=-1, keepdim=True)[0].min(dim=-2, keepdim=True)[0]
+        mag_max = mag_original.max(dim=-1, keepdim=True)[0].max(dim=-2, keepdim=True)[0]
+
+        mag_denorm = (mag_norm + 1) / 2 * (mag_max - mag_min) + mag_min
+
+        return torch.stack([mag_denorm, phase], dim=1)
+
+    def train_step(self, data):
+        real_input_norm, real_target_norm, real_input_original, real_target_original = data
+        real_input_norm = real_input_norm.to(self.device)
+        real_target_norm = real_target_norm.to(self.device)
+        real_input_original = real_input_original.to(self.device)
+        real_target_original = real_target_original.to(self.device)
+
+        logger.debug(
+            f"Train - Real input mag range: [{real_input_norm[:, 0].min().item():.4f}, {real_input_norm[:, 0].max().item():.4f}]")
+        logger.debug(
+            f"Train - Real input phase range: [{real_input_norm[:, 1].min().item():.4f}, {real_input_norm[:, 1].max().item():.4f}]")
+        logger.debug(
+            f"Train - Real target mag range: [{real_target_norm[:, 0].min().item():.4f}, {real_target_norm[:, 0].max().item():.4f}]")
+        logger.debug(
+            f"Train - Real target phase range: [{real_target_norm[:, 1].min().item():.4f}, {real_target_norm[:, 1].max().item():.4f}]")
+
+        if not self.check_tensor(real_input_norm, "real_input_norm") or not self.check_tensor(real_target_norm,
+                                                                                              "real_target_norm"):
             return self.return_nan_results()
 
-        noise_estimate = real_input - real_target
+        noise_estimate = real_input_original - real_target_original
 
         # Train the discriminator
         d_loss_from_d_step = 0
         if self.d_update_counter % self.d_update_frequency == 0:
             self.d_optimizer.zero_grad()
-            generated_audio = self.generator(real_input)
+            generated_audio_norm = self.generator(real_input_norm)
 
-            if not self.check_tensor(generated_audio, "generated_audio (discriminator step)"):
+            if not self.check_tensor(generated_audio_norm, "generated_audio_norm (discriminator step)"):
                 return self.return_nan_results()
 
-            real_target_noisy = self.add_instance_noise(real_target)
-            generated_audio_noisy = self.add_instance_noise(generated_audio.detach())
+            real_target_noisy = self.add_instance_noise(real_target_norm)
+            generated_audio_noisy = self.add_instance_noise(generated_audio_norm.detach())
 
             real_output = self.discriminator(real_target_noisy)
             fake_output = self.discriminator(generated_audio_noisy)
@@ -213,7 +246,7 @@ class AudioEnhancementGAN(nn.Module):
             d_loss_real = F.relu(1.0 - real_output).mean()
             d_loss_fake = F.relu(1.0 + fake_output).mean()
             d_loss = d_loss_real + d_loss_fake
-            gp = self.gradient_penalty(real_target, generated_audio.detach())
+            gp = self.gradient_penalty(real_target_norm, generated_audio_norm.detach())
             d_loss = d_loss + 10 * gp
 
             if not self.check_tensor(d_loss, "d_loss"):
@@ -237,22 +270,25 @@ class AudioEnhancementGAN(nn.Module):
 
         # Train the generator
         self.g_optimizer.zero_grad()
-        generated_audio = self.generator(real_input)
+        generated_audio_norm = self.generator(real_input_norm)
 
-        if not self.check_tensor(generated_audio, "generated_audio (generator step)"):
+        if not self.check_tensor(generated_audio_norm, "generated_audio_norm (generator step)"):
             return self.return_nan_results()
 
-        fake_output = self.discriminator(generated_audio)
+        fake_output = self.discriminator(generated_audio_norm)
 
         if not self.check_tensor(fake_output, "fake_output (generator step)"):
             return self.return_nan_results()
 
-        # Least Squares GAN loss for generator replaced with hinge loss
+        # Hinge loss for generator
         g_loss_adv = -fake_output.mean()
 
+        # Denormalize generated audio for loss calculation
+        generated_audio_original = self.denormalize_stft(generated_audio_norm, real_input_original)
+
         g_loss, loss_components, _ = losses.generator_loss(
-            real_target,
-            generated_audio,
+            real_target_original,
+            generated_audio_original,
             fake_output,
             noise_estimate,
             feature_extractor=self.feature_extractor,
@@ -286,7 +322,7 @@ class AudioEnhancementGAN(nn.Module):
               f"D_loss: {self.last_d_loss:.4f}, G_loss_adv: {g_loss_adv.item():.4f}")
 
         self.current_step += 1
-        self.d_update_counter += 1  # Increment the counter
+        self.d_update_counter += 1
         self.instance_noise *= self.instance_noise_anneal_rate
 
         return {
@@ -300,26 +336,32 @@ class AudioEnhancementGAN(nn.Module):
         self.loss_components.clear()
 
     def val_step(self, batch):
-        real_input, real_target = batch
-        real_input = real_input.to(self.device)
-        real_target = real_target.to(self.device)
+        real_input_norm, real_target_norm, real_input_original, real_target_original = batch
+        real_input_norm = real_input_norm.to(self.device)
+        real_target_norm = real_target_norm.to(self.device)
+        real_input_original = real_input_original.to(self.device)
+        real_target_original = real_target_original.to(self.device)
 
-        if not self.check_tensor(real_input, "val_real_input") or not self.check_tensor(real_target, "val_real_target"):
+        if not self.check_tensor(real_input_norm, "val_real_input_norm") or not self.check_tensor(real_target_norm,
+                                                                                                  "val_real_target_norm"):
             return float('nan')
 
-        generated_audio = self.generator(real_input)
+        generated_audio_norm = self.generator(real_input_norm)
 
-        if not self.check_tensor(generated_audio, "val_generated_audio"):
+        if not self.check_tensor(generated_audio_norm, "val_generated_audio_norm"):
             return float('nan')
 
-        fake_output = self.discriminator(generated_audio)
+        # Denormalize generated audio for loss calculation
+        generated_audio_original = self.denormalize_stft(generated_audio_norm, real_input_original)
+
+        fake_output = self.discriminator(generated_audio_norm)
 
         if not self.check_tensor(fake_output, "val_fake_output"):
             return float('nan')
 
-        noise_estimate = real_input - real_target
+        noise_estimate = real_input_original - real_target_original
 
-        g_loss, _, _ = losses.generator_loss(real_target, generated_audio, fake_output,
+        g_loss, _, _ = losses.generator_loss(real_target_original, generated_audio_original, fake_output,
                                              noise_estimate,
                                              feature_extractor=self.feature_extractor,
                                              weights=self.loss_weights)

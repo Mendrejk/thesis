@@ -1,8 +1,10 @@
 import argparse
+import csv
 import os
 import shutil
 from collections import defaultdict
 from datetime import datetime
+import random
 
 import torch
 from torch import optim
@@ -151,6 +153,12 @@ def train(gan, train_loader, val_loader, num_epochs=50, log_dir='./logs', device
     checkpoint_dir = os.path.join(run_log_dir, 'checkpoints')
     os.makedirs(checkpoint_dir, exist_ok=True)
 
+    # Set up iteration logging
+    iteration_csv_file = os.path.join(run_log_dir, 'iteration_loss_log.csv')
+    with open(iteration_csv_file, 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(['iteration', 'epoch', 'g_loss', 'd_loss', 'g_loss_adv'])
+
     checkpoint_callback = CheckpointCallback(checkpoint_dir)
     loss_visualization_callback = LossVisualizationCallback(log_dir=run_log_dir)
     early_stopping_callback = EarlyStoppingCallback(patience=5, verbose=True, delta=0.01,
@@ -159,6 +167,19 @@ def train(gan, train_loader, val_loader, num_epochs=50, log_dir='./logs', device
     overall_progress = tqdm(total=num_epochs, desc="Overall Progress", position=0)
     overall_progress.update(start_epoch)
 
+    # Select a random sample for STFT comparison
+    val_iter = iter(val_loader)
+    num_val_samples = len(val_loader.dataset)
+    random_sample_index = random.randint(0, num_val_samples - 1)
+    for _ in range(random_sample_index // val_loader.batch_size):
+        next(val_iter)
+    sample_batch = next(val_iter)
+    sample_index_in_batch = random_sample_index % val_loader.batch_size
+    sample_input_norm, sample_target_norm, sample_input_original, sample_target_original = [
+        t[sample_index_in_batch:sample_index_in_batch+1].to(device) for t in sample_batch
+    ]
+
+    iteration_counter = 0
     for epoch in range(start_epoch, num_epochs):
         epoch_start_time = time.time()
         gan.train()
@@ -166,8 +187,23 @@ def train(gan, train_loader, val_loader, num_epochs=50, log_dir='./logs', device
         train_progress = tqdm(train_loader, desc=f"Epoch {epoch + 1}/{num_epochs}", position=1, leave=False)
         epoch_losses = defaultdict(float)
         epoch_loss_components = defaultdict(float)
+
         for i, batch in enumerate(train_progress):
             loss_dict = gan.train_step(batch)
+            iteration_counter += 1
+
+            # Log iteration-level losses every 50 iterations
+            if iteration_counter % 50 == 0:
+                with open(iteration_csv_file, 'a', newline='') as file:
+                    writer = csv.writer(file)
+                    writer.writerow([
+                        iteration_counter,
+                        epoch + 1,
+                        loss_dict['g_loss'],
+                        loss_dict['d_loss_from_d'],
+                        loss_dict['g_loss_adv']
+                    ])
+
             for k, v in loss_dict.items():
                 if k != 'loss_components':
                     epoch_losses[k] += v
@@ -192,6 +228,7 @@ def train(gan, train_loader, val_loader, num_epochs=50, log_dir='./logs', device
         val_loss = 0
         with torch.no_grad():
             for batch in val_loader:
+                batch = [t.to(device) for t in batch]  # Move all tensors to the correct device
                 val_loss += gan.val_step(batch)
         val_loss /= len(val_loader)
 
@@ -219,20 +256,19 @@ def train(gan, train_loader, val_loader, num_epochs=50, log_dir='./logs', device
 
         gan.reset_loss_components()
 
-        # Save sample outputs and visualize STFT comparison
-        sample_input, sample_target = next(iter(val_loader))
-        sample_input = sample_input.to(device)
-        sample_target = sample_target.to(device)
-        sample_output = gan.generator(sample_input)
+        # Generate STFT comparison using the fixed random sample
+        with torch.no_grad():
+            sample_output_norm = gan.generator(sample_input_norm)
+            sample_output_original = gan.denormalize_stft(sample_output_norm, sample_input_original)
 
         loss_visualization_callback.visualize_stft_comparison(
-            sample_target[0, 0].cpu().numpy(),  # Original (undamaged) STFT
-            sample_input[0, 0].cpu().numpy(),   # Damaged STFT
-            sample_output[0, 0].detach().cpu().numpy(),  # Generated (restored) STFT
+            sample_target_original[0, 0].cpu().numpy(),  # Original (undamaged) STFT
+            sample_input_original[0, 0].cpu().numpy(),  # Damaged STFT
+            sample_output_original[0, 0].detach().cpu().numpy(),  # Generated (restored) STFT
             epoch
         )
 
-        save_raw_tensor_samples(gan.generator, val_loader, num_samples=5, device=device, log_dir=run_log_dir, epoch=epoch)
+        save_raw_tensor_samples(gan, val_loader, num_samples=5, device=device, log_dir=run_log_dir, epoch=epoch)
 
         overall_progress.update(1)
 
@@ -270,8 +306,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Audio Enhancement GAN')
     parser.add_argument('--no-cuda', action='store_true', default=False,
                         help='disables CUDA training')
-    parser.add_argument('--batch-size', type=int, default=12, metavar='N',
-                        help='input batch size for training (default: 12)')
+    parser.add_argument('--batch-size', type=int, default=5, metavar='N',
+                        help='input batch size for training (default: 5)')
     parser.add_argument('--epochs', type=int, default=50, metavar='N',
                         help='number of epochs to train (default: 50)')
     args = parser.parse_args()

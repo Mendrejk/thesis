@@ -7,12 +7,14 @@ import librosa
 import librosa.display
 import csv
 from scipy import signal
+from typing_extensions import override
+
 
 class LossVisualizationCallback:
     def __init__(self, log_dir):
         self.log_dir = log_dir
         self.losses = defaultdict(list)
-        self.loss_components = {}
+        self.loss_components = defaultdict(list)
         self.csv_file = os.path.join(log_dir, 'loss_log.csv')
         self.iteration_csv_file = os.path.join(log_dir, 'iteration_loss_log.csv')
         self.epochs = []
@@ -39,8 +41,6 @@ class LossVisualizationCallback:
             for k, v in logs.items():
                 if k.startswith('loss_component_'):
                     component_name = k[15:]  # Remove 'loss_component_' prefix
-                    if component_name not in self.loss_components:
-                        self.loss_components[component_name] = []
                     self.loss_components[component_name].append(v)
                 else:
                     self.losses[k].append(v)
@@ -53,13 +53,18 @@ class LossVisualizationCallback:
             self.plot_losses(epoch)
             self.plot_loss_components(epoch)
 
-    def on_iteration_end(self, g_loss, d_loss):
-        self.iteration_counter += 1
-        self.iterations.append(self.iteration_counter)
-
-        # Log to iteration CSV every 50 iterations
-        if self.iteration_counter % 50 == 0:
-            self.log_to_iteration_csv(g_loss, d_loss)
+    # def on_train_step_end(self, state, unit):
+    #     self.iteration_counter += 1
+    #     g_loss = state.g_loss.item() if isinstance(state.g_loss, torch.Tensor) else state.g_loss
+    #     d_loss = state.d_loss.item() if isinstance(state.d_loss, torch.Tensor) else state.d_loss
+    #
+    #     self.iterations.append(self.iteration_counter)
+    #     self.losses['g_loss'].append(g_loss)
+    #     self.losses['d_loss'].append(d_loss)
+    #
+    #     # Log to iteration CSV every 50 iterations
+    #     if self.iteration_counter % 50 == 0:
+    #         self.log_to_iteration_csv(g_loss, d_loss)
 
     def log_to_csv(self, epoch, logs):
         with open(self.csv_file, 'a', newline='') as file:
@@ -67,16 +72,11 @@ class LossVisualizationCallback:
             row = [epoch, logs.get('g_loss', ''), logs.get('d_loss', ''), logs.get('val_loss', '')]
 
             # Add loss components
-            for component in self.loss_components.keys():
-                if f'loss_component_{component}' not in self.csv_file:
-                    # If this is a new component, add it to the header
-                    with open(self.csv_file, 'r') as read_file:
-                        header = next(csv.reader(read_file))
-                    header.append(f'loss_component_{component}')
-                    with open(self.csv_file, 'w', newline='') as write_file:
-                        csv.writer(write_file).writerow(header)
-
-                row.append(logs.get(f'loss_component_{component}', ''))
+            for component, values in self.loss_components.items():
+                if len(values) > 0:
+                    row.append(values[-1])
+                else:
+                    row.append('')
 
             writer.writerow(row)
 
@@ -93,7 +93,7 @@ class LossVisualizationCallback:
         plt.figure(figsize=(15, 10))
         plt.style.use('ggplot')
 
-        main_losses = ['g_loss', 'd_loss_from_d', 'd_loss_from_g', 'val_loss']
+        main_losses = ['g_loss', 'd_loss', 'val_loss']
         for loss_name in main_losses:
             if loss_name in self.losses and len(self.losses[loss_name]) > 0:
                 plt.plot(self.epochs, self.losses[loss_name], label=loss_name, linewidth=2)
@@ -108,6 +108,7 @@ class LossVisualizationCallback:
         plt.tight_layout()
         plt.savefig(os.path.join(self.log_dir, f'main_losses_epoch_{epoch}.png'), dpi=300, bbox_inches='tight')
         plt.close()
+
 
     def plot_loss_components(self, epoch):
         if not self.epochs:  # If there's no data to plot, return early
@@ -139,25 +140,26 @@ class LossVisualizationCallback:
         # Print final loss values
         print("Final loss values:")
         for loss_name, loss_values in self.losses.items():
-            print(f"{loss_name}: {loss_values[-1]:.4f}")
+            if loss_values:
+                print(f"{loss_name}: {loss_values[-1]:.4f}")
 
     def visualize_stft_comparison(self, original_stft, damaged_stft, generated_stft, epoch, sr=22050, hop_length=512):
         fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(30, 8))
 
         # Plot original (undamaged) STFT
-        img1 = librosa.display.specshow(librosa.amplitude_to_db(np.abs(original_stft), ref=np.max),
+        img1 = librosa.display.specshow(librosa.amplitude_to_db(original_stft, ref=np.max),
                                         sr=sr, hop_length=hop_length, x_axis='time', y_axis='hz', ax=ax1)
         ax1.set_title('Original (Undamaged) STFT', fontsize=16)
         fig.colorbar(img1, ax=ax1, format='%+2.0f dB')
 
         # Plot damaged STFT
-        img2 = librosa.display.specshow(librosa.amplitude_to_db(np.abs(damaged_stft), ref=np.max),
+        img2 = librosa.display.specshow(librosa.amplitude_to_db(damaged_stft, ref=np.max),
                                         sr=sr, hop_length=hop_length, x_axis='time', y_axis='hz', ax=ax2)
         ax2.set_title('Damaged STFT', fontsize=16)
         fig.colorbar(img2, ax=ax2, format='%+2.0f dB')
 
         # Plot generated (restored) STFT
-        img3 = librosa.display.specshow(librosa.amplitude_to_db(np.abs(generated_stft), ref=np.max),
+        img3 = librosa.display.specshow(librosa.amplitude_to_db(generated_stft, ref=np.max),
                                         sr=sr, hop_length=hop_length, x_axis='time', y_axis='hz', ax=ax3)
         ax3.set_title('Generated (Restored) STFT', fontsize=16)
         fig.colorbar(img3, ax=ax3, format='%+2.0f dB')
