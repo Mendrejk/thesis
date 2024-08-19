@@ -357,3 +357,27 @@ audio-quality-perception:
   date: 2021-06-05
   parent:
     title: "MDPI"
+
+6:
+  type: Article
+  author: ["Nogales, A.", "Donaher, S.", "García-Tejedor ´A."]
+  title: "A deep learning framework for audio restoration using Convolutional/ Deconvolutional Deep Autoencoders"
+  date: 2022-03-21
+  parent:
+    title: "CEIEC"
+
+5:
+  type: Article
+  author: ["Cheddad, Z.A.", "Cheddad, A."]
+  title: "Active Restoration of Lost Audio Signals using Machine Learning and Latent Information"
+  date: 2024-01-18
+  parent:
+    title: "Blekinge Institute of Technology, Universit´e Fr`eres Mentouri"
+
+8:
+  type: Thesis
+  author: ["Jinhui, D.", "Yue, Z.", "Pengcheng X.", "Xinzhou, X."]
+  title: "Super-Resolution for Music Signals Using Generative Adversarial Networks"
+  date: 2021
+  parent:
+    title: "Nanjing University of Posts and Telecommunications"

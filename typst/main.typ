@@ -552,6 +552,43 @@ Jednocześnie warto zauważyć, że niektóre rodzaje zniekształceń, szczegól
 
 Zrozumienie charakterystyki zniekształceń w nagraniach muzycznych jest kluczowym krokiem w opracowaniu skutecznych metod ich redukcji. W kolejnych częściach pracy skupię się na tym, jak zaawansowane techniki uczenia maszynowego, w szczególności sieci GAN, mogą być wykorzystane do adresowania tych problemów, jednocześnie starając się zachować artystyczną integralność oryginalnych nagrań.
 
+== 2.1.1. Szumy i trzaski
+Szumy i trzaski stanowią jeden z najbardziej powszechnych problemów w historycznych nagraniach. Źródła szumów są różnorodne i obejmują ograniczenia sprzętowe, takie jak szum termiczny w elektronice, oraz zakłócenia elektromagnetyczne pochodzące z otoczenia lub samego sprzętu nagrywającego @noise-in-early-recordings. Charakterystyka trzasków jest często związana z przyczynami mechanicznymi, takimi jak uszkodzenia powierzchni płyt winylowych, lub elektronicznymi, wynikającymi z niedoskonałości w procesie zapisu lub odtwarzania.
+Wpływ szumów i trzasków na jakość odsłuchu jest znaczący. Mogą one maskować subtelne detale muzyczne, zmniejszać dynamikę nagrania oraz powodować zmęczenie słuchacza. W skrajnych przypadkach, intensywne szumy lub częste trzaski mogą całkowicie zaburzyć odbiór muzyki, czyniąc nagranie trudnym lub niemożliwym do słuchania @audio-quality-perception.
+
+== 2.1.2. Ograniczenia pasma częstotliwościowego
+Historyczne ograniczenia w rejestrowaniu pełnego spektrum częstotliwości są jednym z kluczowych wyzwań w rekonstrukcji nagrań. Wczesne systemy nagrywania często były w stanie zarejestrować jedynie wąski zakres częstotliwości, typowo między 250 Hz a 2500 Hz @audio-bandwidth-history. To ograniczenie miało poważne konsekwencje dla brzmienia instrumentów i wokalu, prowadząc do utraty zarówno niskich tonów, nadających muzyce głębię i ciepło, jak i wysokich częstotliwości, odpowiedzialnych za klarowność i przestrzenność dźwięku.
+Znaczenie szerokiego pasma dla naturalności i pełni dźwięku jest trudne do przecenienia. Współczesne badania pokazują, że ludzkie ucho jest zdolne do percepcji dźwięków w zakresie od około 20 Hz do 20 kHz, choć z wiekiem górna granica często się obniża. Pełne odtworzenie tego zakresu jest kluczowe dla realistycznego oddania brzmienia instrumentów i głosu ludzkiego. Rekonstrukcja szerokiego pasma częstotliwościowego w historycznych nagraniach stanowi zatem jedno z głównych zadań w procesie ich restauracji, co odzwierciedlają badania nad technikami takimi jak BEHM-GAN @9.
+
+== 2.1.3. Zniekształcenia nieliniowe
+Zniekształcenia nieliniowe stanowią szczególnie złożoną kategorię problemów w rekonstrukcji nagrań audio. Definiuje się je jako odstępstwa od idealnej, liniowej relacji między sygnałem wejściowym a wyjściowym w systemie audio. Przyczyny tych zniekształceń mogą być różnorodne, obejmując między innymi nasycenie magnetyczne w taśmach analogowych, nieliniową charakterystykę lamp elektronowych w starszym sprzęcie nagrywającym, czy też ograniczenia mechaniczne w przetwornikach @analog-media-degradation.
+Wpływ zniekształceń nieliniowych na nagrania jest znaczący i często subtelny. Prowadzą one do powstania dodatkowych harmonicznych składowych dźwięku, które nie były obecne w oryginalnym sygnale, oraz do zjawiska intermodulacji, gdzie różne częstotliwości wejściowe generują nowe, niepożądane tony. W rezultacie, brzmienie instrumentów może ulec zmianie, a czystość i przejrzystość nagrania zostaje zaburzona. W niektórych przypadkach, zwłaszcza w muzyce elektronicznej czy rockowej, pewne formy zniekształceń nieliniowych mogą być celowo wprowadzane dla uzyskania pożądanego efektu artystycznego.
+Korekcja zniekształceń nieliniowych stanowi jedno z największych wyzwań w procesie rekonstrukcji audio. W przeciwieństwie do zniekształceń liniowych, które można stosunkowo łatwo skorygować za pomocą filtrów, zniekształcenia nieliniowe wymagają bardziej zaawansowanych technik. Tradycyjne metody często okazują się niewystarczające, co skłania badaczy do poszukiwania rozwiązań opartych na uczeniu maszynowym, takich jak adaptacyjne modelowanie nieliniowości czy zastosowanie głębokich sieci neuronowych @11. Trudność polega na tym, że korekta tych zniekształceń wymaga precyzyjnego odtworzenia oryginalnego sygnału, co jest szczególnie skomplikowane w przypadku historycznych nagrań, gdzie brakuje referencyjnego materiału wysokiej jakości.
+
+== 2.2. Tradycyjne metody poprawy jakości nagrań
+
+Ewolucja technik restauracji nagrań audio przeszła znaczącą transformację od prostych metod analogowych do zaawansowanych technik cyfrowych. Początkowo, restauracja nagrań opierała się głównie na fizycznej konserwacji nośników i optymalizacji sprzętu odtwarzającego. Wraz z rozwojem technologii cyfrowej, pojawiły się nowe możliwości manipulacji sygnałem audio, co znacząco rozszerzyło arsenał narzędzi dostępnych dla inżynierów dźwięku @6. Nogales i inni w swojej pracy porównują efektywność klasycznych metod filtracji, takich jak filtr Wienera, z nowoczesnymi technikami głębokiego uczenia, ilustrując tę ewolucję.
+
+Jednak tradycyjne metody, mimo swojej skuteczności w wielu przypadkach, mają pewne ograniczenia. Głównym problemem jest trudność w selektywnym usuwaniu szumów bez wpływu na oryginalny sygnał muzyczny. Ponadto, rekonstrukcja utraconych lub zniekształconych częstotliwości często prowadzi do artefaktów dźwiękowych, które mogą być równie niepożądane jak oryginalne zniekształcenia. Cheddad i Cheddad @5 w swoich badaniach nad aktywną rekonstrukcją utraconych sygnałów audio podkreślają te ograniczenia, proponując jednocześnie nowe podejścia uzupełniające klasyczne techniki restauracji.
+
+=== 2.2.1. Filtracja cyfrowa
+
+Filtracja cyfrowa stanowi podstawę wielu technik restauracji audio. Wyróżniamy trzy podstawowe typy filtrów: dolnoprzepustowe, górnoprzepustowe i pasmowe. Dai i inni @8 w swoich badaniach nad super-rozdzielczością sygnałów muzycznych pokazują, jak tradycyjne metody filtracji mogą być rozszerzone i ulepszone dzięki zastosowaniu uczenia maszynowego.
+
+Zastosowanie filtracji w redukcji szumów polega na identyfikacji i selektywnym tłumieniu częstotliwości, w których dominuje szum. W korekcji częstotliwościowej, filtry są używane do wzmacniania lub osłabiania określonych zakresów częstotliwości, co pozwala na poprawę balansu tonalnego nagrania.
+
+Wady filtracji cyfrowej obejmują ryzyko wprowadzenia artefaktów dźwiękowych, zwłaszcza przy agresywnym filtrowaniu, oraz potencjalną utratę subtelnych detali muzycznych. Zaletą jest natomiast precyzja i powtarzalność procesu, a także możliwość niedestrukcyjnej edycji.
+
+=== 2.2.2. Remasterowanie
+
+Remasterowanie to proces poprawy jakości istniejącego nagrania, często z wykorzystaniem nowoczesnych technologii cyfrowych. Celem remasteringu jest poprawa ogólnej jakości dźwięku, zwiększenie głośności do współczesnych standardów oraz dostosowanie brzmienia do współczesnych systemów odtwarzania.
+
+Typowe etapy remasteringu obejmują normalizację, kompresję i korekcję EQ. Moliner i Välimäki @8 w swojej pracy nad BEHM-GAN pokazują, jak nowoczesne techniki mogą być wykorzystane do przezwyciężenia ograniczeń tradycyjnego remasteringu, szczególnie w kontekście rekonstrukcji wysokich częstotliwości w historycznych nagraniach muzycznych.
+
+Kontrowersje wokół remasteringu często dotyczą konfliktu między zachowaniem autentyczności oryginalnego nagrania a dążeniem do poprawy jakości dźwięku. Lattner i Nistal @11 w swoich badaniach nad stochastyczną restauracją mocno skompresowanych plików audio pokazują, jak zaawansowane techniki mogą być wykorzystane do poprawy jakości nagrań bez utraty ich oryginalnego charakteru, co stanowi istotny głos w debacie o autentyczności vs. jakość dźwięku.
+
+Mimo swoich ograniczeń, tradycyjne metody poprawy jakości nagrań wciąż odgrywają istotną rolę w procesie restauracji audio. Jednakże, rosnąca złożoność wyzwań związanych z restauracją historycznych nagrań skłania badaczy do poszukiwania bardziej zaawansowanych rozwiązań, w tym metod opartych na sztucznej inteligencji, które mogą przezwyciężyć niektóre z ograniczeń tradycyjnych technik.
+
 #pagebreak(weak: true)
 
 = Przegląd literatury
@@ -660,3 +697,4 @@ Zebrane źródła skupiają się na sposobach restauracji, rekonstrukcji i oczys
 
 #todo_outline
 
+  

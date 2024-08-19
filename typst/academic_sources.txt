@@ -1,0 +1,78 @@
+== Spis literatury
+
+
++ #link("https://apd.usos.pwr.edu.pl/diplomas/8158/")[
+  Projekt i implementacja wybranych algorytmów sztucznej inteligencji w procesie rekonstrukcji nagrań fonicznych
+  [Przemysław Szczotka]
+]
+
+  Praca realizuje dwukierunkową konwolucyjno-rekurencyjną sieć neuronową (*BCRNN*) w celu usuwania zniekształceń takich jak szum, brakujące dane, intermodulacja i flutter. Praca ta pokazuje praktyczne zastosowanie metod uczenia maszynowego w przetwarzaniu sygnałów dźwiękowych i prezentuje wyniki eksperymentalne na bazie utworu Antoniego Vivaldiego "Cztery pory roku - Wiosna cz. I Allegro".
+
++ #link("https://apd.usos.pwr.edu.pl/diplomas/6496/")[
+  Badanie jakości autorskich algorytmów cyfrowego przetwarzania sygnałów fonicznych
+  [Michał Szubiński]
+]
+
+  #todo("[przeczytać i napisać opis]")
+// TODO: tu opis jak dostanę pracę
+
++ #link("https://medium.com/illumination/restoring-and-reconstructing-old-and-damaged-compositions-using-ai-to-preserve-the-musical-heritage-b5eeb20b0039")[
+  Restoring and reconstructing old and damaged compositions using AI to preserve the musical heritage
+  [medium.com]
+]
+
+  Artykuł opisuje zastosowanie sztucznej inteligencji (AI) w *ochronie i rekonstrukcji dziedzictwa muzycznego*. Autorka pokazuje jak AI może pomóc w przywracaniu uszkodzonych kompozycji, rekonstruowaniu utraconych lub niedokończonych utworów, oraz jakie są etyczne i techniczne ograniczenia tego procesu. Autorka patrzy na problem z innej perspektywy, biorąc pod uwagę aspekty historyczne i kulturowe muzyki.
+
++ #link("https://arxiv.org/abs/2109.02692")[
+  Machine Learning: Challenges, Limitations, and Compatibility for Audio Restoration Processes
+  [Owen Casey; Rushit Dave; Naeem Seliya; Evelyn R Sowells Boone]
+]
+
+  Artykuł dotyczy wykorzystania sieci generatywnych przeciwnych (*GAN*) do poprawy jakości zdegradowanych i skompresowanych nagrań mowy. Autorzy opisują swoje próby zbudowania nowego modelu uczenia maszynowego na podstawie istniejącego projektu SEGAN, który miał na celu usunięcie szumów tła z dźwięku głosowego. Artykuł może być przydatny, ponieważ przedstawia wyzwania, ograniczenia i problemy zgodności związane z zastosowaniem uczenia maszynowego do zadań przetwarzania dźwięku.
+
++ #link("https://arxiv.org/pdf/2111.10891.pdf")[
+  Active Restoration of Lost Audio Signals using Machine Learning and Latent Information
+  [Zohra Adila Cheddad and Abbas Cheddad]
+]
+
+  Artykuł przedstawia nową metodę aktywnej rekonstrukcji utraconych sygnałów dźwiękowych z wykorzystaniem *steganografii, halftonowania i uczenia maszynowego*. Autorzy proponują połączenie tych trzech dziedzin nauki, aby osiągnąć lepszą jakość odtwarzania dźwięku i większą odporność na uszkodzenia danych. Ta metoda może być przydatna ponieważ pokazuje, jak wykorzystać ukryte informacje i zaawansowane modele uczenia maszynowego do naprawy uszkodzonych nagrań dźwiękowych.
+
++ #link("https://pdf.sciencedirectassets.com/271506/1-s2.0-S0957417423X00165/1-s2.0-S0957417423010886/main.pdf?X-Amz-Security-Token=IQoJb3JpZ2luX2VjEMX%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLWVhc3QtMSJHMEUCIQDZedhvUr59FORr8RtvmL0lu2uYf4bG6tQ%2B8GVOjGJ0sQIgT2v6IpTIaosVkQ9KP9H67V8Ea1URIgQbOTNMKJRrbqsqvAUIjv%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FARAFGgwwNTkwMDM1NDY4NjUiDNsCB6Ym2qc8drSoeSqQBUmt72SlbfVbwcj5wWkCB%2F9yFzq6UZtkEAB%2B5%2BJfuvemTY6U9n85sDHwyfAotDB5l8M4qEU13FCmh75%2FRI9kGc2K%2B2Mx6BB0lRt1m4PVJvKm5vtOm0Eg737u3kC84RZRB1FHLtl9gCO8AAFVAIXFu0NxAWLHkt5rfrbijJqaqdC7E%2FSfiJfafOVZjwHUDs3DQu9vjttqaZk6Z0G7Ppi7rFgM8wYXonsuUzglxkZ8qFN9z14s9G4WREZY%2FtUNCIu2ncWHpIpH9Dr9OnREQlZjOXvkO4fzUaiTfyrtqgpqIbe8iBQVET%2BifI4jq0etAgrLb4MCWu07wzD0HbbzdGQ9pRtmL90TmBG9kn0JFW5QXIEF3ZCM9mCD7QQ6SrjtNC5KBAYCKG16UHE9X8pj12li%2FRC8o3fzUE6WW%2F3s6DnO9wUD9jd9LxZIAZfBVK5bR63gIJBkUiHjne6mS6YUZdef2hk6zdWS1jXk6vU1v3irCRSJ78wRqY10c7B8TqIk3lTgvtnrPgwMy0MQ%2BDrp%2FRsB5M2GW71N5Fu1%2F26njasJxak7upW19snzxqhl7idNcNlAY3tXxFgydRt5UWfJnWSR9b9RmIBGsg2%2F%2FsF9W2rWzABcynydFkecfWHWQCWyZb9h6%2F%2B9hoxKEh7gkXnII3RSBjc8l6fGZI0oVzxenI5Rnh2kTSBWAMc%2Bz6YZUnwC2iXv3FMK0FIKhjHpmPz7UEA%2BpMkeianQWipy2IE6TNgARAd2gnka4duZpg0E513sOxFSsRVwj7LGTP9CLXooXuzvIqWITJP4ANX5ddnpbagcZc9jDjr626uDRUHWz8IZVkSQaKhmVYMeMRGfEmEUkYu40JBZ96BzXUw6XR38J6%2FkrK3OMNOE%2Fq0GOrEB9SS%2BWP%2FdaKosYqHOC3Jqu0LmGfVRU3pnnoUIVJZMM2chmT9NCnDTLCWxyjQP0F119uwBLMg4k%2B1vIwsNIdho7JhZcZbjdvtQ3raK657PSedSZcrf5Ug3WglhWkX1%2Fd7Jce7%2BbNQScja7lcw%2F3817ZsulY5zFNuxW4Q%2BFv8J2lY8%2BtEEj3bwasLeWydlhdS6E4VFvichkB5r9SxDUyWfnAx5I38BdMFouTBOBL%2BLO78uN&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20240204T141932Z&X-Amz-SignedHeaders=host&X-Amz-Expires=300&X-Amz-Credential=ASIAQ3PHCVTYW6TGFZDO%2F20240204%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=6e8cca352e098bc386e86f26c8663827bab036192b94025e145c178642563f16&hash=1d2503d5067a665dcb3eeb883b2c418a9aece00de36694bc72d2c2cc702f7004&host=68042c943591013ac2b2430a89b270f6af2c76d8dfd086a07176afe7c76c2c61&pii=S0957417423010886&tid=spdf-c5684dbf-6b64-47b6-a95a-47ddd3a31242&sid=59a2a7511e5301454e7af26-81491c79c29bgxrqa&type=client&tsoh=d3d3LnNjaWVuY2VkaXJlY3QuY29t&ua=0a0c5a5756545c025952&rr=85038c936da93512&cc=pl")[
+  A deep learning framework for audio restoration using Convolutional/Deconvolutional Deep Autoencoders
+  [Alberto Nogales, Santiago Donaher, Alvaro García-Tejedor]
+]
+
+  Ten artykuł przedstawia głęboką sieć neuronową opartą na *architekturze U-Net*, która służy do przywracania uszkodzonych nagrań dźwiękowych. Autorzy pokazują, że ich model osiąga lepsze wyniki niż klasyczne metody filtracji Wienera czy Wave-U-Net. Problem dotyczy zastosowania uczenia maszynowego do rekonstrukcji dźwięku, który jest istotny dla komunikacji i jakości nagrań.
+
++ #link("https://downloads.hindawi.com/journals/am/2018/3748141.pdf")[
+  Research on Objective Evaluation of Recording Audio Restoration Based on Deep Learning Network
+]
+
+  Artykuł opisuje system oceny jakości nagrań historycznych oparty na *głębokiej sieci neuronowej z wykorzystaniem LSTM*. Autorzy porównują dwa rodzaje cech mowy: MFCC i GFCC i wykazują, że GFCC lepiej symuluje fizjologiczne właściwości ludzkiego ucha. Artykuł przedstawia *ciekawy system automatycznych ocen który może zostać zastosowany obok oceny eksperymentalnej na podstawie ankiety.*
+
++ #link("https://ieeexplore-1ieee-1org-1600oqgmc0074.han.bg.pwr.edu.pl/stamp/stamp.jsp?tp=&arnumber=9515219&tag=1")[
+  Super-Resolution for Music Signals Using Generative Adversarial Networks [Jinhui Dai, Yue Zhang, Pengcheng Xie, Xinzhou Xu]
+]
+
+  Artykuł dotyczy zastosowania sieci generatywnych przeciwnych (*GAN*) do poprawy jakości *sygnałów muzycznych* poprzez zwiększenie ich rozdzielczości częstotliwościowej. Autorzy proponują metodę, która wykorzystuje spektogram logarytmiczny i fazę sygnału  i porównują ją z innymi podejściami opartymi na interpolacji - DNN i CNN. *Autorzy skupiają się na nagraniach o ograniczonym paśmie lub zniekształconych przez szum.*
+
++ #link("https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=9829821")[BEHM-GAN: Bandwidth Extension of Historical Music Using Generative Adversarial Networks]
+
+  Sieć *GAN* do poprawy jakości *historycznych nagrań na pianinie*. Bardzo dobrze działa ale tylko do pianina. Potrzebne dalsze badania.
+
++ #link("https://www.epfl.ch/labs/mlo/wp-content/uploads/2022/10/crpmlcourse-paper1225.pdf")[Music Super-resolution with Spectral Flatness Loss and HiFi-GAN Discriminators
+]
+
+  Artykuł przedstawia ulepszenia w dziedzinie audio super-rozdzielczości przy użyciu *sieci GAN*. Autorzy integrują dyskryminator *HiFi-GAN* i wprowadzają *nową funkcję straty opartą na płaskości widmowej*. Badania wykazują poprawę w czasie treningu oraz potencjał do redukcji słyszalnego szumu, jednocześnie otwierając nowe możliwości w projektowaniu funkcji straty dla syntezy dźwięku wysokiej jakości.
+
++ #link("https://www.mdpi.com/2079-9292/10/11/1349#sec3dot3dot1-electronics-10-01349")[Stochastic Restoration of Heavily Compressed Musical Audio Using Generative Adversarial Networks]
+
+  Artykuł prezentuje zastosowanie Generatywnych Sieci Przeciwstawnych (*GAN*) do poprawy jakości mocno *skompresowanych plików MP3*. Autorzy testują *stochastyczne i deterministyczne* generatory na plikach MP3 o różnych stopniach kompresji. Wyniki pokazują, że modele skutecznie poprawiają jakość dźwięku dla plików 16 i 32 kbit/s, *szczególnie w przypadku dźwięków perkusyjnych i wysokich częstotliwości*. Stochastyczny generator jest w stanie wytworzyć próbki bliższe oryginałowi niż generator deterministyczny. Badanie otwiera nowe możliwości w dziedzinie cyfrowej rekonstrukcji dźwięku.
+
++ #link("https://www.proquest.com/docview/2808565445/fulltextPDF/CEBFF7ED7C5D4870PQ/1?accountid=46407&sourcetype=Dissertations%20&%20Theses")[MACHINE LEARNING APPROACHES TO HISTORIC MUSIC RESTORATION]
+
+  Praca przedstawia zastosowanie uczenia maszynowego do odrestaurowania historycznego *nagrania fortepianowego* Johannesa Brahmsa z 1889 roku. Wykorzystano metody *nienegatywnej faktoryzacji macierzy (NMF) oraz głębokich sieci neuronowych (DNN)* w połączeniu z *cyfrowym przetwarzaniem sygnałów*. Choć nie udało się przewyższyć wyników dotychczasowej restauracji, opracowane podejścia oferują pewne korzyści, w tym lepszą identyfikację początków nut oraz potencjał do szybszej wstępnej restauracji licznych historycznych nagrań.
+
++ #link("https://arxiv.org/pdf/2402.09821")[Diffusion Models for Audio Restoration]
+
+  Artykuł przedstawia kompleksowe omówienie wykorzystania modeli dyfuzji w zadaniach związanych z restauracją dźwięku, takich jak poprawa jakości mowy i odtwarzanie muzyki. Autorzy omawiają różne techniki warunkowania modeli dyfuzji, które pozwalają na generowanie wysokiej jakości próbek dźwiękowych, jednocześnie umożliwiając wstrzykiwanie wiedzy dziedzinowej. Artykuł porusza również praktyczne wymagania związane z wykorzystaniem modeli dyfuzji, takie jak szybkość wnioskowania, przetwarzanie przyczynowe oraz odporność na niekorzystne warunki, przedstawiając różne podejścia do rozwiązania tych wyzwań, podkreślając potencjał modeli dyfuzyjnych w tworzeniu naturalnie brzmiących i niezawodnych algorytmów odtwarzania dźwięku.
