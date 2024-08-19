@@ -1,0 +1,359 @@
+first-recorded-sound:
+  type: Article
+  title: What Was the First Sound Ever Recorded by a Machine?
+  date: 2024-08-19
+  url: https://time.com/5084599/first-recorded-sound/
+  parent:
+    title: time.com
+
+edison-phonograph:
+  type: Article
+  title: The Edison Phonograph
+  date: 2024-08-19
+  url: https://en.wikipedia.org/wiki/Edison_Phonograph # TODO - url is not working
+  parent:
+    title: Wikipedia
+
+sound-recording-history:
+  type: Article
+  title: Sound recording and reproduction
+  date: 2024-08-19
+  url: https://en.wikipedia.org/wiki/Sound_recording_and_reproduction
+  parent:
+    title: Wikipedia
+
+berliner-gramophone:
+  type: Article
+  title: Emile Berliner
+  date: 2024-08-19
+  url: https://en.wikipedia.org/wiki/Emile_Berliner
+  parent:
+    title: Wikipedia
+
+electrical-recording:
+  type: Article
+  title: Electrical recording
+  date: 2024-08-19
+  url: https://en.wikipedia.org/wiki/Electrical_recording
+  parent:
+    title: Wikipedia
+
+lp-record:
+  type: Article
+  title: LP record
+  date: 2024-08-19
+  url: https://en.wikipedia.org/wiki/LP_record
+  parent:
+    title: Wikipedia
+
+compact-cassette:
+  type: Article
+  title: Cassette tape
+  date: 2024-08-19
+  url: https://en.wikipedia.org/wiki/Compact_Cassette
+  parent:
+    title: Wikipedia
+
+cd-introduction:
+  type: Article
+  title: Compact disc
+  date: 2024-08-19
+  url: https://en.wikipedia.org/wiki/Compact_disc
+  parent:
+    title: Wikipedia
+
+early-recording-limitations:
+  type: Article
+  title: Early recording formats
+  date: 2024-08-19
+  url: https://en.wikipedia.org/wiki/Early_recording_formats # TODO - url is not working
+  parent:
+    title: Wikipedia
+
+music-accessibility:
+  type: Article
+  title: Music accessibility
+  date: 2024-08-19
+  url: https://en.wikipedia.org/wiki/Music_accessibility # TODO - url is not working
+  parent:
+    title: Wikipedia
+
+audio-restoration-challenges:
+  type: Article
+  title: Audio restoration
+  date: 2024-08-19
+  url: https://en.wikipedia.org/wiki/Audio_restoration
+  parent:
+    title: Wikipedia
+
+audio-bandwidth-history:
+  type: Article
+  title: Audio bandwidth
+  date: 2024-08-19
+  url: https://en.wikipedia.org/wiki/Audio_bandwidth # TODO - url is not working
+  parent:
+    title: Wikipedia
+
+noise-in-early-recordings:
+  type: Article
+  title: Noise in early recordings
+  date: 2024-08-19
+  url: https://en.wikipedia.org/wiki/Noise_in_early_recordings # TODO - url is not working
+  parent:
+    title: Wikipedia
+
+analog-media-degradation:
+  type: Article
+  title: Analog recording
+  date: 2024-08-19
+  url: https://en.wikipedia.org/wiki/Analog_recording # TODO - to nie jest najlepsze źródło
+  parent:
+    title: Wikipedia
+
+storage-conditions-impact:
+  type: Article
+  title: Storage conditions
+  date: 2024-08-19
+  url: https://en.wikipedia.org/wiki/Storage_conditions # TODO - url is not working
+  parent:
+    title: Wikipedia
+
+print-through-effect:
+  type: Article
+  title: Print-through
+  date: 2024-08-19
+  url: https://en.wikipedia.org/wiki/Print-through
+  parent:
+    title: Wikipedia
+
+brahms-recording:
+  type: Article
+  title: Johannes Brahms
+  date: 2024-08-19
+  url: https://en.wikipedia.org/wiki/Johannes_Brahms
+  parent:
+    title: Wikipedia
+
+early-blues-recordings:
+  type: Article
+  title: Blues
+  date: 2024-08-19
+  url: https://en.wikipedwia.org/wiki/Blues
+  parent:
+    title: Wikipedia
+
+playback-equipment-challenges:
+  type: Article
+  title: Playback equipment
+  date: 2024-08-19
+  url: https://en.wikipedia.org/wiki/Playback_equipment # TODO - url is not working
+  parent:
+    title: Wikipedia
+
+music-digitization-challenges:
+  type: Article
+  title: Music digitization
+  date: 2024-08-19
+  url: https://en.wikipedia.org/wiki/Music_digitization # TODO - url is not working
+  parent:
+    title: Wikipedia
+
+preservation-storage-requirements:
+  type: Article
+  title: Preservation (library and archival science)
+  date: 2024-08-19
+  url: https://en.wikipedia.org/wiki/Preservation_(library_and_archival_science)
+  parent:
+    title: Wikipedia
+
+ethical-considerations-in-audio-restoration:
+  type: Article
+  title: Audio restoration
+  date: 2024-08-19
+  url: https://en.wikipedia.org/wiki/Audio_restoration # TODO - to nie jest najlepsze źródło
+  parent:
+    title: Wikipedia
+
+ai-in-audio-restoration:
+  type: Article
+  title: Audio restoration
+  date: 2024-08-19
+  url: https://en.wikipedia.org/wiki/Audio_restoration # TODO - to nie jest najlepsze źródło
+  parent:
+    title: Wikipedia
+
+cultural-value-of-music-archives:
+  type: Article
+  title: Music archive
+  date: 2024-08-19
+  url: https://en.wikipedia.org/wiki/Music_archive # TODO - to nie jest najlepsze źródło
+  parent:
+    title: Wikipedia
+
+preservation-of-audio-heritage:
+  type: Article
+  title: Audio preservation
+  date: 2024-08-19
+  url: https://en.wikipedia.org/wiki/Audio_preservation # TODO - url is not working
+  parent:
+    title: Wikipedia
+
+historical-performance-practice:
+  type: Article
+  title: Historically informed performance
+  date: 2024-08-19
+  url: https://en.wikipedia.org/wiki/Historically_informed_performance
+  parent:
+    title: Wikipedia
+
+musicological-research-methods:
+  type: Article
+  title: Musicology
+  date: 2024-08-19
+  url: https://en.wikipedia.org/wiki/Musicology
+  parent:
+    title: Wikipedia
+
+performance-practice-evolution:
+  type: Article
+  title: Performance practice
+  date: 2024-08-19
+  url: https://en.wikipedia.org/wiki/Performance_practice
+  parent:
+    title: Wikipedia
+
+composer-performances:
+  type: Article
+  title: Composer
+  date: 2024-08-19
+  url: https://en.wikipedia.org/wiki/Composer # TODO - nie najlepsze źródło
+  parent:
+    title: Wikipedia
+
+music-audio-quality-perception:
+  type: Article
+  title: Audio quality measurement
+  date: 2024-08-19
+  url: https://en.wikipedia.org/wiki/Audio_quality_measurement # TODO - złe źródło - tekst mówi "badania wskazują"
+  parent:
+    title: Wikipedia
+
+rediscovery-of-forgotten-music:
+  type: Article
+  title: Rediscovery
+  date: 2024-08-19
+  url: https://en.wikipedia.org/wiki/Rediscovery # TODO - złe źródło
+  parent:
+    title: Wikipedia
+
+nuance-in-restored-recordings:
+  type: Article
+  title: Audio restoration
+  date: 2024-08-19
+  url: https://en.wikipedia.org/wiki/Audio_restoration # TODO - to nie jest najlepsze źródło
+  parent:
+    title: Wikipedia
+
+remastered-recordings-market:
+  type: Article
+  title: Remaster
+  date: 2024-08-19
+  url: https://en.wikipedia.org/wiki/Remaster
+  parent:
+    title: Wikipedia
+
+classical-music-reissues:
+  type: Article
+  title: Classical music
+  date: 2024-08-19
+  url: https://en.wikipedia.org/wiki/Classical_music # TODO - nie najlepsze źródło
+  parent:
+    title: Wikipediacv
+
+revenue-from-restored-recordings:
+  type: Article
+  title: Music industry
+  date: 2024-08-19
+  url: https://en.wikipedia.org/wiki/Music_industry # TODO - nie najlepsze źródło
+  parent:
+    title: Wikipedia
+
+future-of-audio-restoration:
+  type: Article
+  title: Audio restoration
+  date: 2024-08-19
+  url: https://en.wikipedia.org/wiki/Audio_restoration # TODO - to nie jest najlepsze źródło
+  parent:
+    title: Wikipedia
+
+noise-reduction-techniques:
+  type: Article
+  title: Noise reduction
+  date: 2024-08-19
+  url: https://en.wikipedia.org/wiki/Noise_reduction
+  parent:
+    title: Wikipedia
+
+bandwidth-extension-methods:
+  type: Article
+  title: Bandwidth extension
+  date: 2024-08-19
+  url: https://en.wikipedia.org/wiki/Bandwidth_extension
+  parent:
+    title: Wikipedia
+
+audio-inpainting-techniques:
+  type: Article
+  title: Audio inpainting
+  date: 2024-08-19
+  url: https://en.wikipedia.org/wiki/Audio_inpainting
+  parent:
+    title: Wikipedia
+
+gan-in-audio-processing:
+  type: Article
+  title: Generative adversarial network
+  date: 2024-08-19
+  url: https://en.wikipedia.org/wiki/Generative_adversarial_network # TODO - to nie jest najlepsze źródło
+  parent:
+    title: Wikipedia
+
+gan-image-restoration:
+  type: Article
+  title: Generative adversarial network
+  date: 2024-08-19
+  url: https://en.wikipedia.org/wiki/Generative_adversarial_network # TODO - to nie jest najlepsze źródło
+  parent:
+    title: Wikipedia
+
+audio-quality-perception:
+  type: Article
+  title: Audio quality measurement
+  date: 2024-08-19
+  url: https://en.wikipedia.org/wiki/Audio_quality_measurement # TODO - złe źródło
+  parent:
+    title: Wikipedia
+
+1:
+  type: Thesis
+  author: Szczotka, Przemysław
+  title: Projekt i implementacja wybranych algorytmów sztucznej inteligencji w procesie rekonstrukcji nagrań fonicznych
+  date: 2023
+  parent:
+    title: Politechnika Wrocławska
+
+9:
+  type: Article
+  author: ["Moliner, E.", "Välimäki, V."]
+  title: "BEHM-GAN: Bandwidth Extension of Historical Music Using Generative Adversarial Networks"
+  date: 2022-06-17
+  parent:
+    title: "IEEE"
+
+11:
+  type: Article
+  author: ["Lattner, S.", "Nistal, J."]
+  title: "Stochastic Restoration of Heavily Compressed Musical Audio Using Generative Adversarial Networks"
+  date: 2021-06-05
+  parent:
+    title: "MDPI"
