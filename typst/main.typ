@@ -7,6 +7,8 @@
 #show link: underline
 #set text(lang: "PL")
 
+#set page(numbering: "1")
+
 #import "@preview/big-todo:0.2.0": *
 
 
@@ -589,6 +591,206 @@ Kontrowersje wokół remasteringu często dotyczą konfliktu między zachowaniem
 
 Mimo swoich ograniczeń, tradycyjne metody poprawy jakości nagrań wciąż odgrywają istotną rolę w procesie restauracji audio. Jednakże, rosnąca złożoność wyzwań związanych z restauracją historycznych nagrań skłania badaczy do poszukiwania bardziej zaawansowanych rozwiązań, w tym metod opartych na sztucznej inteligencji, które mogą przezwyciężyć niektóre z ograniczeń tradycyjnych technik.
 
+
+== 2.3. Wyzwania w rekonstrukcji historycznych nagrań muzycznych
+
+Proces rekonstrukcji historycznych nagrań muzycznych stawia przed badaczami szereg złożonych wyzwań, wymagających interdyscyplinarnego podejścia i zaawansowanych technik przetwarzania sygnałów.
+
+Fundamentalnym problemem jest brak oryginalnych, wysokiej jakości źródeł dźwięku. Wiele historycznych nagrań przetrwało jedynie w formie znacznie zdegradowanej, często na nośnikach analogowych, które same uległy deterioracji @analog-media-degradation. Szczotka @1 zwraca uwagę, że niedobór niezakłóconych sygnałów referencyjnych komplikuje proces uczenia modeli rekonstrukcyjnych, zmuszając do opracowywania zaawansowanych metod symulacji degradacji dźwięku.
+
+Identyfikacja i separacja poszczególnych instrumentów w nagraniach historycznych stanowi kolejne istotne wyzwanie. Dai i współpracownicy @8 podkreślają znaczenie tego aspektu, szczególnie w kontekście rekonstrukcji złożonych utworów orkiestrowych, gdzie ograniczenia wczesnych systemów nagrywania często prowadziły do nakładania się ścieżek instrumentalnych.
+
+Kluczowym dylematem jest zachowanie autentyczności brzmienia przy jednoczesnej poprawie jakości. Moliner i Välimäki @9 akcentują potrzebę znalezienia równowagi między poprawą technicznej jakości dźwięku a utrzymaniem charakterystycznego, historycznego brzmienia nagrania. Zbyt agresywna ingerencja może prowadzić do utraty autentyczności i kontekstu historycznego.
+
+Etyczne aspekty ingerencji w historyczne nagrania budzą kontrowersje w środowisku muzycznym i konserwatorskim. Lattner i Nistal @11 poruszają kwestię granic dopuszczalnej modyfikacji oryginalnego nagrania, argumentując za ostrożnym stosowaniem zaawansowanych technik rekonstrukcji.
+
+Techniczne ograniczenia w odtwarzaniu oryginalnego brzmienia wynikają z fundamentalnych różnic między historycznymi a współczesnymi technologiami audio. Cheddad @5 zwracają uwagę na trudności w wiernym odtworzeniu charakterystyki akustycznej dawnych sal koncertowych czy specyfiki historycznych instrumentów.
+
+Złożoność wyzwań związanych z rekonstrukcją historycznych nagrań muzycznych wymaga kompleksowego podejścia. Integracja zaawansowanych technik przetwarzania sygnałów, metod uczenia maszynowego, wiedzy muzykologicznej oraz refleksji etycznej jest kluczowa dla skutecznego rozwiązywania napotkanych problemów. Badania prowadzone przez Nogalesa i in. @6 wskazują na potrzebę ciągłego doskonalenia istniejących metod oraz opracowywania nowych rozwiązań. Przyszłość rekonstrukcji nagrań historycznych zależy od zdolności naukowców do tworzenia innowacyjnych technik, które będą w stanie sprostać unikalnym wymaganiom każdego historycznego dzieła muzycznego, zachowując jednocześnie jego autentyczność i wartość artystyczną.
+
+
+== 3.1. Przegląd technik uczenia maszynowego w przetwarzaniu dźwięku
+
+Rozwój metod uczenia maszynowego w ostatnich latach przyniósł znaczący postęp w dziedzinie przetwarzania i analizy sygnałów dźwiękowych. Techniki te znajdują coraz szersze zastosowanie w poprawie jakości nagrań, rekonstrukcji uszkodzonych fragmentów oraz ekstrakcji informacji z sygnałów audio.
+
+=== 3.1.1. Ewolucja zastosowań uczenia maszynowego w dziedzinie audio
+
+Początki wykorzystania uczenia maszynowego w przetwarzaniu dźwięku sięgają lat 90. XX wieku, kiedy to zaczęto stosować proste modele statystyczne do klasyfikacji gatunków muzycznych czy rozpoznawania mowy @4. Wraz z rozwojem mocy obliczeniowej komputerów oraz postępem w dziedzinie sztucznych sieci neuronowych, nastąpił gwałtowny wzrost zainteresowania tymi technikami w kontekście analizy i syntezy dźwięku.
+
+Przełomowym momentem było zastosowanie głębokich sieci neuronowych, które umożliwiły modelowanie złożonych zależności w sygnałach audio. Badania wykazały, że głębokie sieci konwolucyjne potrafią skutecznie wyodrębniać cechy charakterystyczne dźwięków, co otworzyło drogę do bardziej zaawansowanych zastosowań, takich jak separacja źródeł dźwięku czy poprawa jakości nagrań.
+
+W ostatnich latach coraz większą popularność zyskują modele generatywne, takie jak sieci GAN (Generative Adversarial Networks) czy modele dyfuzyjne, które umożliwiają nie tylko analizę, ale także syntezę wysokiej jakości sygnałów audio @8. Te zaawansowane techniki znajdują zastosowanie w rekonstrukcji uszkodzonych nagrań oraz rozszerzaniu pasma częstotliwości starych rejestracji dźwiękowych.
+
+=== 3.1.2. Klasyfikacja głównych podejść: nadzorowane, nienadzorowane, półnadzorowane
+
+W kontekście przetwarzania sygnałów audio można wyróżnić trzy główne podejścia do uczenia maszynowego:
+
+a) Uczenie nadzorowane:
+W tym podejściu model uczy się na podstawie par danych wejściowych i oczekiwanych wyników. W dziedzinie audio może to obejmować uczenie się mapowania między zaszumionymi a czystymi nagraniami w celu usuwania szumów, czy też klasyfikację instrumentów na podstawie oznaczonych próbek dźwiękowych. Przykładem zastosowania uczenia nadzorowanego jest praca Nogales A. i innych @6, w której autorzy wykorzystali konwolucyjne sieci neuronowe do rekonstrukcji uszkodzonych nagrań audio.
+
+b) Uczenie nienadzorowane:
+Techniki nienadzorowane skupiają się na odkrywaniu ukrytych struktur w danych bez korzystania z etykiet. W kontekście audio może to obejmować grupowanie podobnych dźwięków czy wyodrębnianie cech charakterystycznych bez uprzedniej wiedzy o ich znaczeniu.
+
+c) Uczenie półnadzorowane:
+To podejście łączy elementy uczenia nadzorowanego i nienadzorowanego, wykorzystując zarówno oznaczone, jak i nieoznaczone dane. Jest szczególnie przydatne w sytuacjach, gdy dostępna jest ograniczona ilość oznaczonych próbek, co często ma miejsce w przypadku historycznych nagrań audio.
+
+=== 3.1.3. Rola reprezentacji dźwięku w uczeniu maszynowym: spektrogramy, cechy MFCC, surowe próbki
+
+Wybór odpowiedniej reprezentacji dźwięku ma kluczowe znaczenie dla skuteczności modeli uczenia maszynowego w zadaniach przetwarzania audio.
+
+a) Spektrogramy:
+Przedstawiają rozkład częstotliwości sygnału w czasie, co pozwala na analizę zarówno cech czasowych, jak i częstotliwościowych. Spektrogramy są szczególnie przydatne w zadaniach takich jak separacja źródeł czy poprawa jakości nagrań. W pracy @8 autorzy wykorzystali spektrogramy logarytmiczne jako wejście do modelu GAN, osiągając dobre wyniki w zadaniu rozszerzania pasma częstotliwości nagrań muzycznych.
+
+b) Cechy MFCC (Mel-Frequency Cepstral Coefficients):
+Reprezentują charakterystykę widmową dźwięku w sposób zbliżony do ludzkiego systemu słuchowego. MFCC są często stosowane w zadaniach klasyfikacji i rozpoznawania mowy. Badania wykazały, że cechy MFCC mogą być skutecznie wykorzystywane w ocenie jakości rekonstrukcji nagrań historycznych.
+
+c) Surowe próbki:
+Niektóre modele, szczególnie te oparte na sieciach konwolucyjnych, mogą pracować bezpośrednio na surowych próbkach audio. Podejście to eliminuje potrzebę ręcznego projektowania cech, pozwalając modelowi na samodzielne odkrywanie istotnych wzorców w sygnale.
+
+Wybór odpowiedniej reprezentacji zależy od specyfiki zadania oraz architektury modelu. Coraz częściej stosuje się też podejścia hybrydowe, łączące różne reprezentacje w celu uzyskania lepszych wyników.
+
+Techniki uczenia maszynowego oferują szerokie spektrum możliwości w dziedzinie przetwarzania i poprawy jakości sygnałów audio. Ewolucja tych metod, od prostych modeli statystycznych po zaawansowane sieci generatywne, umożliwia rozwiązywanie coraz bardziej złożonych problemów związanych z rekonstrukcją i poprawą jakości nagrań dźwiękowych. W kontekście przetwarzania sygnałów audio kluczowe znaczenie ma odpowiedni dobór podejścia (nadzorowane, nienadzorowane lub półnadzorowane) oraz reprezentacji dźwięku. Właściwe decyzje w tym zakresie pozwalają na optymalne wykorzystanie potencjału uczenia maszynowego, co przekłada się na skuteczność i efektywność opracowywanych rozwiązań. Postęp w tej dziedzinie otwiera nowe możliwości w zakresie zachowania i odtwarzania dziedzictwa kulturowego, jakim są historyczne nagrania dźwiękowe.
+
+
+== 3.2. Sieci neuronowe w zadaniach audio
+
+Sieci neuronowe stały się fundamentalnym narzędziem w przetwarzaniu sygnałów dźwiękowych, oferując niezrównaną elastyczność i zdolność do modelowania złożonych zależności. Ich adaptacyjna natura pozwala na automatyczne wyodrębnianie istotnych cech z surowych danych audio, co czyni je niezwykle skutecznymi w szerokiej gamie zastosowań - od klasyfikacji dźwięków po zaawansowaną syntezę mowy.
+
+Różnorodność architektur sieci neuronowych pozwala na dobór optymalnego rozwiązania do specyfiki danego zadania audio. Konwolucyjne sieci neuronowe (CNN) wykazują szczególną skuteczność w analizie lokalnych wzorców w spektrogramach, podczas gdy rekurencyjne sieci neuronowe (RNN) doskonale radzą sobie z modelowaniem długoterminowych zależności czasowych. Autoenkodery z kolei znajdują zastosowanie w kompresji i odszumianiu sygnałów, oferując możliwość redukcji wymiarowości przy zachowaniu kluczowych cech dźwięku.
+
+Efektywność poszczególnych architektur może się znacząco różnić w zależności od konkretnego zadania. Badania empiryczne wskazują, że hybrydowe podejścia, łączące zalety różnych typów sieci, często prowadzą do najlepszych rezultatów w złożonych scenariuszach przetwarzania audio.
+
+=== 3.2.1. Konwolucyjne sieci neuronowe (CNN)
+
+Konwolucyjne sieci neuronowe zrewolucjonizowały sposób, w jaki analizujemy sygnały audio. Ich unikalna architektura, inspirowana biologicznym systemem wzrokowym, okazała się niezwykle skuteczna w wyodrębnianiu hierarchicznych cech z reprezentacji czasowo-częstotliwościowych dźwięku.
+
+W kontekście analizy audio, CNN operują najczęściej na spektrogramach, traktując je jako dwuwymiarowe "obrazy" dźwięku. Warstwy konwolucyjne działają jak filtry, wyodrębniając lokalne wzorce spektralne, które mogą odpowiadać konkretnym cechom akustycznym, takim jak akordy, formanty czy charakterystyki instrumentów.
+
+Klasyfikacja dźwięków i rozpoznawanie mowy to obszary, w których sieci CNN wykazują szczególną skuteczność. W zadaniach identyfikacji gatunków muzycznych czy detekcji słów kluczowych, sieci te potrafią automatycznie nauczyć się rozpoznawać istotne cechy spektralne, często przewyższając tradycyjne metody oparte na ręcznie projektowanych cechach.
+
+Adaptacje CNN do specyfiki danych dźwiękowych obejmują m.in. zastosowanie dilated convolutions. Ta technika pozwala na zwiększenie pola recepcyjnego sieci bez zwiększania liczby parametrów, co jest szczególnie przydatne w modelowaniu długoterminowych zależności czasowych w sygnałach audio. Dilated CNN znalazły zastosowanie m.in. w generowaniu dźwięku w czasie rzeczywistym.
+
+=== 3.2.2. Rekurencyjne sieci neuronowe (RNN)
+
+Rekurencyjne sieci neuronowe wyróżniają się zdolnością do przetwarzania sekwencji danych, co czyni je naturalnym wyborem do analizy sygnałów audio. Ich architektura, oparta na pętlach sprzężenia zwrotnego, pozwala na uwzględnienie kontekstu czasowego w przetwarzaniu dźwięku, co jest kluczowe w wielu zadaniach, takich jak modelowanie muzyki czy rozpoznawanie mowy ciągłej.
+
+LSTM (Long Short-Term Memory) i GRU (Gated Recurrent Unit) to popularni "następcy" klasycznych RNN, którzy rozwiązują problem zanikającego gradientu. Te zaawansowane jednostki rekurencyjne potrafią efektywnie przetwarzać długie sekwencje audio, zachowując informacje o odległych zależnościach czasowych.
+
+W syntezie mowy, modele oparte na LSTM wykazały się zdolnością do generowania naturalnie brzmiących wypowiedzi, uwzględniających niuanse prozodyczne. W dziedzinie modelowania muzyki, sieci rekurencyjne znalazły zastosowanie w generowaniu sekwencji akordów czy komponowaniu melodii, potrafiąc uchwycić złożone struktury harmoniczne i rytmiczne.
+
+=== 3.2.3. Autoenkodery
+
+Autoenkodery to fascynująca klasa sieci neuronowych, której głównym zadaniem jest nauczenie się efektywnej, skompresowanej reprezentacji danych wejściowych. W kontekście audio, ta zdolność do redukcji wymiarowości otwiera szereg możliwości - od kompresji sygnałów po zaawansowane techniki odszumiania.
+
+Klasyczny autoenkoder składa się z enkodera, który "ściska" dane wejściowe do niższego wymiaru, oraz dekodera, który próbuje odtworzyć oryginalne dane z tej skompresowanej reprezentacji. W zastosowaniach audio, autoenkodery mogą nauczyć się reprezentacji, które zachowują kluczowe cechy dźwięku, jednocześnie eliminując szum czy niepożądane artefakty.
+
+Wariacyjne autoenkodery (VAE) idą o krok dalej, wprowadzając element losowości do procesu kodowania. Ta cecha czyni je szczególnie przydatnymi w generowaniu nowych, unikalnych dźwięków, zachowujących charakterystykę danych treningowych. VAE znalazły zastosowanie m.in. w syntezie mowy i efektów dźwiękowych.
+
+Splotowe autoenkodery (CAE) łączą zalety autoenkoderów i CNN, co czyni je skutecznymi w zadaniach związanych z przetwarzaniem spektrogramów. Ich zdolność do wyodrębniania lokalnych cech spektralnych przy jednoczesnej redukcji wymiarowości sprawia, że są cennym narzędziem w odszumianiu i restauracji nagrań audio.
+
+== 3.3. Generatywne sieci przeciwstawne (GAN) w kontekście audio
+
+Generatywne sieci przeciwstawne (GAN) to innowacyjna architektura uczenia maszynowego, która zrewolucjonizowała podejście do generacji i przetwarzania danych, w tym sygnałów audio. Podstawowa idea GAN opiera się na "rywalizacji" dwóch sieci neuronowych: generatora, który tworzy nowe dane, oraz dyskryminatora, który ocenia ich autentyczność. Ta koncepcja, początkowo opracowana dla obrazów, została z powodzeniem zaadaptowana do domeny audio, otwierając nowe możliwości w syntezie i manipulacji dźwiękiem.
+
+W kontekście danych dźwiękowych, architektura GAN wymaga specyficznego podejścia. Generator często pracuje na reprezentacjach czasowo-częstotliwościowych, takich jak spektrogramy, tworząc nowe "obrazy" dźwięku. Dyskryminator z kolei analizuje te reprezentacje, ucząc się rozróżniać między autentycznymi a wygenerowanymi próbkami. Kluczowym wyzwaniem jest zapewnienie, aby wygenerowane spektrogramy były nie tylko realistyczne wizualnie, ale także przekładały się na spójne i naturalne brzmienia po konwersji z powrotem do domeny czasowej.
+
+Zastosowania GAN w dziedzinie audio są niezwykle różnorodne. W syntezie dźwięku, sieci te potrafią generować realistyczne efekty dźwiękowe czy nawet całe utwory muzyczne, naśladując style konkretnych artystów. W zadaniach super-rozdzielczości audio, sieci GAN wykazują imponującą zdolność do rekonstrukcji wysokich częstotliwości w nagraniach o ograniczonym paśmie, co znajduje zastosowanie w restauracji historycznych nagrań. Transfer stylu audio, inspirowany podobnymi technikami w przetwarzaniu obrazów, pozwala na przenoszenie charakterystyk brzmieniowych między różnymi nagraniami, otwierając fascynujące możliwości w produkcji muzycznej.
+
+Trening GAN dla sygnałów audio niesie ze sobą specyficzne wyzwania. Niestabilność treningu, charakterystyczna dla GAN, jest szczególnie problematyczna w domenie audio, gdzie nawet drobne artefakty mogą znacząco wpłynąć na jakość percepcyjną. Projektowanie odpowiednich funkcji straty, które uwzględniają specyfikę ludzkiego słuchu, stanowi kolejne wyzwanie. Ponadto, zapewnienie spójności fazowej w generowanych spektrogramach wymaga dodatkowych technik, takich jak wykorzystanie informacji o fazie lub bezpośrednie generowanie w domenie czasowej.
+
+== 3.4. Modele dyfuzyjne w rekonstrukcji dźwięku
+
+Modele dyfuzyjne reprezentują nowatorskie podejście do generacji danych, które w ostatnich latach zyskało ogromną popularność w dziedzinie przetwarzania dźwięku. U podstaw tej koncepcji leży idea stopniowego dodawania szumu do danych, a następnie uczenia się procesu odwrotnego - usuwania szumu, co prowadzi do generacji nowych, wysokiej jakości próbek.
+
+Proces generacji dźwięku w modelach dyfuzyjnych można podzielić na dwa etapy. W pierwszym, zwanym procesem forward, do oryginalnego sygnału audio stopniowo dodawany jest szum gaussowski, aż do otrzymania czystego szumu. W drugim etapie, zwanym procesem reverse, model uczy się krok po kroku usuwać ten szum, rozpoczynając od losowej próbki szumu i stopniowo przekształcając ją w realistyczny sygnał audio. Ta unikalna architektura pozwala na generację dźwięku o wysokiej jakości i szczegółowości.
+
+Zastosowania modeli dyfuzyjnych w rekonstrukcji i syntezie audio są obiecujące. W zadaniach rekonstrukcji uszkodzonych nagrań, modele te wykazują zdolność do "wypełniania" brakujących fragmentów w sposób spójny z resztą nagrania. W syntezie mowy, modele dyfuzyjne potrafią generować niezwykle naturalne i ekspresyjne wypowiedzi, uwzględniając subtelne niuanse prozodyczne.
+
+W porównaniu z GAN, modele dyfuzyjne oferują kilka istotnych zalet w kontekście zadań audio. Przede wszystkim, ich trening jest bardziej stabilny i przewidywalny, co przekłada się na konsekwentnie wysoką jakość generowanych próbek. Modele dyfuzyjne wykazują również lepszą zdolność do modelowania różnorodności danych, unikając problemu "mode collapse" charakterystycznego dla GAN. Jednakże, kosztem tych zalet jest zazwyczaj dłuższy czas generacji, co może ograniczać ich zastosowanie w aplikacjach czasu rzeczywistego.
+
+Aktualne osiągnięcia w dziedzinie modeli dyfuzyjnych dla dźwięku są imponujące. Modele takie jak WaveGrad czy DiffWave demonstrują wysoką jakość w syntezie mowy, często przewyższając modele autoregresyjne. W dziedzinie muzyki, modele dyfuzyjne pokazują rezultaty w generacji instrumentalnej i wokalnej, zachowując niezwykłą szczegółowość brzmienia.
+
+Eksplorowane są techniki łączenia modeli dyfuzyjnych z innymi architekturami, takimi jak transformery, w celu lepszego modelowania długoterminowych zależności w sygnałach audio. Rosnące zainteresowanie multimodalnych modeli dyfuzyjnych otwiera możliwości syntezy audio skorelowanej z innymi modalnościami, takimi jak obraz czy tekst.
+
+Zarówno GAN, jak i modele dyfuzyjne reprezentują przełomowe podejścia w dziedzinie generacji i rekonstrukcji dźwięku. Każda z tych technik oferuje unikalne zalety. Dalszy rozwój tych metod niewątpliwie przyczyni się do postępu w takich dziedzinach jak restauracja historycznych nagrań, synteza mowy czy produkcja muzyczna, otwierając nowe horyzonty w przetwarzaniu i generacji sygnałów audio.
+
+
+== 4. Zastosowania metod sztucznej inteligencji w rekonstrukcji nagrań muzycznych
+
+=== Ogólny przegląd praktycznych zastosowań AI w restauracji nagrań
+
+Zastosowanie sztucznej inteligencji (AI) w rekonstrukcji nagrań muzycznych stale zyskuje na popularności. Tradycyjne techniki restauracji, jak filtry analogowe i cyfrowe, miały swoje ograniczenia, szczególnie w kontekście skomplikowanych sygnałów muzycznych. Nowoczesne metody AI, w tym głębokie uczenie i generatywne sieci przeciwstawne (GAN), oferują nowe możliwości w przywracaniu uszkodzonych i zdegradowanych nagrań muzycznych, poprawiając ich jakość w sposób, który wcześniej nie był możliwy.
+
+Przykładowo, praca Dai et al. pokazuje, jak sieci GAN mogą być wykorzystane do poprawy rozdzielczości sygnałów muzycznych, co prowadzi do bardziej precyzyjnej i szczegółowej rekonstrukcji dźwięku @8. Z kolei badania przedstawione przez Nogales et al. wykorzystują głębokie autoenkodery do przywracania jakości nagrań, przewyższając tradycyjne metody, takie jak filtracja Wienera @6.
+
+=== Porównanie skuteczności metod AI z tradycyjnymi technikami
+
+Tradycyjne metody rekonstrukcji nagrań muzycznych, takie jak filtry Wienera czy metody interpolacji oparte na DSP, są powszechnie stosowane, ale ich skuteczność jest ograniczona. Wprowadzenie technik AI, w szczególności głębokich sieci neuronowych, znacząco poprawiło jakość odtwarzania i rekonstrukcji nagrań.
+
+Przykładem jest zastosowanie GAN do poprawy jakości mocno skompresowanych plików MP3. Artykuł z MDPI pokazuje, jak stochastyczne generatory oparte na GAN są w stanie wytworzyć próbki bliższe oryginałowi niż tradycyjne metody DSP, szczególnie w przypadku dźwięków perkusyjnych i wysokich częstotliwości @11. Dodatkowo, metody takie jak nienegatywna faktoryzacja macierzy (NMF) i głębokie sieci neuronowe (DNN) zostały zastosowane do odrestaurowania historycznych nagrań fortepianowych, jak pokazuje praca na temat rekonstrukcji nagrania Johannesa Brahmsa z 1889 roku @4.
+
+=== Wpływ postępu w dziedzinie AI na możliwości rekonstrukcji nagrań
+
+Postęp w dziedzinie AI, a zwłaszcza rozwój modeli dyfuzyjnych i GAN, otworzył nowe możliwości w rekonstrukcji nagrań muzycznych. Modele te pozwalają na generowanie dźwięku o wysokiej jakości, nawet z uszkodzonych i silnie skompresowanych źródeł. Artykuł na temat modeli dyfuzyjnych dla restauracji dźwięku przedstawia kompleksowe omówienie tego tematu, podkreślając ich zdolność do generowania naturalnie brzmiących próbek dźwiękowych @13.
+
+
+== 4.1. Usuwanie szumów i zakłóceń
+
+Usuwanie szumów i zakłóceń z nagrań muzycznych stanowi kluczowe wyzwanie w procesie rekonstrukcji dźwięku, szczególnie w kontekście metod opartych na sztucznej inteligencji. Nagrania muzyczne mogą być narażone na różnorodne typy szumów, takie jak szumy tła, impulsowe zakłócenia oraz artefakty powstałe podczas konwersji analogowo-cyfrowej. W celu ich skutecznego usunięcia, konieczne jest zrozumienie charakterystyki każdego z tych szumów, a także ich wpływu na jakość odbioru dźwięku przez słuchacza.
+
+W ostatnich latach, metody oparte na sztucznej inteligencji, w tym sieci neuronowe, zyskały na popularności w kontekście identyfikacji i separacji szumów od sygnału muzycznego. Zastosowanie autoenkoderów oraz sieci GAN okazało się szczególnie efektywne w odszumianiu nagrań, co potwierdzają liczne badania @14. Autoenkodery, ze względu na swoją zdolność do kompresji danych i ich rekonstrukcji, umożliwiają wyodrębnienie istotnych cech sygnału, a jednocześnie eliminację niepożądanych szumów. Z kolei sieci GAN, które składają się z generatora i dyskryminatora, pozwalają na generowanie bardziej realistycznych rekonstrukcji sygnału dźwiękowego, dzięki czemu możliwe jest zachowanie większej ilości detali muzycznych podczas usuwania szumów @14.
+
+Porównanie efektywności różnych architektur sieci neuronowych w zadaniu usuwania szumów wykazało, że tradycyjne metody oparte na filtracji spektralnej ustępują nowoczesnym podejściom opartym na głębokim uczeniu się. Przykładem może być zastosowanie bloków rezydualnych oraz technik normalizacji w architekturze sieci, co prowadzi do znaczącej poprawy jakości odszumionego dźwięku @14.
+
+Niemniej jednak, wyzwania związane z zachowaniem detali muzycznych podczas usuwania szumów pozostają istotnym problemem. Głębokie sieci uczące się często mają tendencję do usuwania nie tylko szumów, ale również subtelnych niuansów muzycznych, co może prowadzić do utraty pierwotnego charakteru nagrania. Aby zminimalizować ten efekt, stosowane są zaawansowane funkcje strat, takie jak Perceptual Loss czy Signal-to-Noise Ratio Loss, które pomagają w zachowaniu jak największej ilości oryginalnych detali dźwiękowych @15.
+
+
+== 4.2. Rozszerzanie pasma częstotliwościowego
+
+Rozszerzanie pasma częstotliwościowego w historycznych nagraniach stanowi istotne wyzwanie technologiczne i badawcze, mające na celu poprawę jakości dźwięku przy zachowaniu integralności oryginalnego materiału.
+
+=== Problematyka ograniczonego pasma w historycznych nagraniach
+
+Historyczne nagrania, z uwagi na ograniczenia technologiczne ówczesnych systemów rejestracji dźwięku, często charakteryzują się ograniczonym pasmem przenoszenia, co prowadzi do utraty wyższych częstotliwości i w rezultacie zubożenia jakości dźwięku. Tego typu nagrania są zwykle poddawane cyfryzacji, a następnie obróbce mającej na celu odzyskanie jak największej ilości utraconej informacji. Rozszerzanie pasma częstotliwościowego staje się tutaj kluczowym narzędziem, które umożliwia przywrócenie pełniejszego brzmienia nagrania, a co za tym idzie, zbliżenie się do oryginalnego zamysłu artystycznego twórcy.
+
+=== Techniki AI do estymacji i syntezy brakujących wysokich częstotliwości
+
+Zastosowanie sztucznej inteligencji, w szczególności technik uczenia maszynowego, przyniosło nowe możliwości w zakresie rekonstrukcji brakujących informacji w historycznych nagraniach. Przykładem tego jest metoda Blind Audio Bandwidth Extension (BABE), która wykorzystuje model dyfuzyjny do estymacji brakujących wysokich częstotliwości w nagraniach o ograniczonym paśmie przenoszenia. Model ten, działający w tzw. trybie zero-shot, pozwala na realistyczne odtworzenie utraconych części spektrum częstotliwości bez konieczności znajomości szczegółów degradacji sygnału @16. Testy subiektywne potwierdziły, że zastosowanie BABE znacząco poprawia jakość dźwięku w nagraniach historycznych @16.
+
+=== Zastosowanie sieci GAN w super-rozdzielczości spektralnej
+
+Sieci generatywne (GAN) znalazły szerokie zastosowanie w przetwarzaniu dźwięku, w tym w rozszerzaniu pasma częstotliwościowego. Metoda BEHM-GAN wykorzystuje sieci GAN do rozszerzania pasma częstotliwościowego w nagraniach muzycznych z początku XX wieku. Zastosowanie GAN pozwala na realistyczną syntezę brakujących wysokich częstotliwości, co przekłada się na znaczną poprawę percepcyjnej jakości dźwięku @9.
+
+=== Metody oceny jakości rozszerzonego pasma częstotliwościowego
+
+Ocena jakości dźwięku po zastosowaniu technik rozszerzania pasma częstotliwościowego jest kluczowym etapem procesu. W przypadku historycznych nagrań ocena ta jest szczególnie istotna, ponieważ dodanie nowych informacji może wpłynąć na oryginalny charakter nagrania. W związku z tym stosuje się zarówno metody obiektywne, jak i subiektywne. Przykładem są testy preferencyjne, w których słuchacze oceniają jakość dźwięku pod kątem jego spójności i naturalności @16.
+
+=== Etyczne aspekty dodawania nowych informacji do historycznych nagrań
+
+Dodawanie nowych informacji do historycznych nagrań rodzi szereg pytań etycznych. Główna kwestia dotyczy tego, na ile możemy modyfikować oryginalny materiał, by nie zatracić jego autentyczności. Rozszerzanie pasma częstotliwościowego za pomocą AI i GAN musi być prowadzone z poszanowaniem dla oryginalnego dzieła, aby zachować jego integralność i nie wprowadzać zmian, które mogłyby zostać odebrane jako manipulacje oryginałem @17 @3.
+
+
+== 4.3. Uzupełnianie brakujących fragmentów
+
+=== Przyczyny i charakterystyka ubytków
+Braki w nagraniach muzycznych mogą mieć różnorodne przyczyny, takie jak uszkodzenia fizyczne nośników, błędy w digitalizacji, czy celowe wycięcia fragmentów w procesie edycji. Charakterystyka tych ubytków jest równie zróżnicowana – od krótkich, niemal niezauważalnych przerw, po dłuższe fragmenty, które znacząco wpływają na integralność utworu muzycznego. W związku z tym, rekonstrukcja brakujących fragmentów stała się kluczowym zadaniem w konserwacji i restauracji nagrań dźwiękowych.
+
+=== Metody AI do interpolacji brakujących fragmentów
+W ostatnich latach znaczący postęp dokonał się w dziedzinie sztucznej inteligencji, szczególnie w kontekście interpolacji brakujących danych audio. Metody te wykorzystują zaawansowane modele uczenia maszynowego, które są zdolne do odtwarzania brakujących próbek dźwiękowych w sposób, który jest trudny do odróżnienia od oryginału. Na przykład, techniki oparte na modelach autoregresyjnych, takich jak Rekurencyjne Sieci Neuronowe (RNN) i Long Short-Term Memory (LSTM), umożliwiają przewidywanie brakujących próbek na podstawie istniejącego kontekstu dźwiękowego, co prowadzi do bardziej naturalnej rekonstrukcji @18.
+
+=== Wykorzystanie kontekstu muzycznego w rekonstrukcji ubytków
+Modele te mogą efektywnie wykorzystywać kontekst muzyczny, analizując struktury melodyczne, rytmiczne i harmoniczne, co pozwala na precyzyjne wypełnienie braków w sposób, który zachowuje spójność i naturalność nagrania. Ważnym aspektem jest tutaj także ocena spójności muzycznej rekonstruowanych fragmentów, która może być przeprowadzona zarówno subiektywnie, poprzez testy odsłuchowe, jak i obiektywnie, z wykorzystaniem narzędzi analitycznych @1.
+
+
+== 4.4. Poprawa jakości mocno skompresowanych plików audio
+Kompresja stratna, taka jak MP3, AAC, czy OGG, jest powszechnie stosowana w celu redukcji rozmiaru plików audio. Jednak proces ten nieodłącznie wiąże się z utratą pewnych informacji, co wpływa na jakość dźwięku. W szczególności mogą pojawić się artefakty, takie jak brakujące detale w wyższych częstotliwościach czy zniekształcenia perkusji, które negatywnie wpływają na odbiór muzyczny @8.
+
+Aby przeciwdziałać tym problemom, rozwijane są techniki oparte na sztucznej inteligencji (AI). Jednym z obiecujących podejść jest zastosowanie głębokich sieci neuronowych, które mogą identyfikować i redukować artefakty kompresji. Przykładowo, modele oparte na architekturze U-Net czy Wave-U-Net są w stanie skutecznie poprawiać jakość dźwięku, szczególnie w przypadku nagrań mocno skompresowanych @6.
+
+Zastosowanie Generatywnych Sieci Przeciwstawnych (GAN) otwiera nowe możliwości w odtwarzaniu detali utraconych podczas kompresji. GAN-y potrafią generować brakujące fragmenty sygnału audio w sposób realistyczny, co pozwala na znaczną poprawę jakości muzyki. Badania wykazują, że sieci GAN są szczególnie skuteczne w zwiększaniu rozdzielczości częstotliwościowej nagrań oraz w poprawie jakości dźwięku w skompresowanych plikach MP3 @11.
+
+Istotną częścią tych procesów jest odpowiednie szkolenie modeli AI. Trening odbywa się na parach nagrań przed i po kompresji, co umożliwia modelom nauczenie się odtwarzania utraconych detali. Wyzwanie stanowi jednak generalizacja tych modeli na różne formaty kompresji, gdyż algorytmy mogą wykazywać różną skuteczność w zależności od typu kompresji. Dalsze badania są konieczne, aby zapewnić efektywne działanie tych technologii w szerokim spektrum formatów @10 @12.
+
 #pagebreak(weak: true)
 
 = Przegląd literatury
@@ -697,4 +899,3 @@ Zebrane źródła skupiają się na sposobach restauracji, rekonstrukcji i oczys
 
 #todo_outline
 
-  

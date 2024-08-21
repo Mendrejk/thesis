@@ -1,7 +1,7 @@
 first-recorded-sound:
   type: Article
   title: What Was the First Sound Ever Recorded by a Machine?
-  date: 2024-08-19
+  date: 2024-08-20
   url: https://time.com/5084599/first-recorded-sound/
   parent:
     title: time.com
@@ -9,7 +9,7 @@ first-recorded-sound:
 edison-phonograph:
   type: Article
   title: The Edison Phonograph
-  date: 2024-08-19
+  date: 2024-08-20
   url: https://en.wikipedia.org/wiki/Edison_Phonograph # TODO - url is not working
   parent:
     title: Wikipedia
@@ -17,7 +17,7 @@ edison-phonograph:
 sound-recording-history:
   type: Article
   title: Sound recording and reproduction
-  date: 2024-08-19
+  date: 2024-08-20
   url: https://en.wikipedia.org/wiki/Sound_recording_and_reproduction
   parent:
     title: Wikipedia
@@ -25,7 +25,7 @@ sound-recording-history:
 berliner-gramophone:
   type: Article
   title: Emile Berliner
-  date: 2024-08-19
+  date: 2024-08-20
   url: https://en.wikipedia.org/wiki/Emile_Berliner
   parent:
     title: Wikipedia
@@ -33,7 +33,7 @@ berliner-gramophone:
 electrical-recording:
   type: Article
   title: Electrical recording
-  date: 2024-08-19
+  date: 2024-08-20
   url: https://en.wikipedia.org/wiki/Electrical_recording
   parent:
     title: Wikipedia
@@ -41,7 +41,7 @@ electrical-recording:
 lp-record:
   type: Article
   title: LP record
-  date: 2024-08-19
+  date: 2024-08-20
   url: https://en.wikipedia.org/wiki/LP_record
   parent:
     title: Wikipedia
@@ -49,7 +49,7 @@ lp-record:
 compact-cassette:
   type: Article
   title: Cassette tape
-  date: 2024-08-19
+  date: 2024-08-20
   url: https://en.wikipedia.org/wiki/Compact_Cassette
   parent:
     title: Wikipedia
@@ -57,7 +57,7 @@ compact-cassette:
 cd-introduction:
   type: Article
   title: Compact disc
-  date: 2024-08-19
+  date: 2024-08-20
   url: https://en.wikipedia.org/wiki/Compact_disc
   parent:
     title: Wikipedia
@@ -65,7 +65,7 @@ cd-introduction:
 early-recording-limitations:
   type: Article
   title: Early recording formats
-  date: 2024-08-19
+  date: 2024-08-20
   url: https://en.wikipedia.org/wiki/Early_recording_formats # TODO - url is not working
   parent:
     title: Wikipedia
@@ -73,7 +73,7 @@ early-recording-limitations:
 music-accessibility:
   type: Article
   title: Music accessibility
-  date: 2024-08-19
+  date: 2024-08-20
   url: https://en.wikipedia.org/wiki/Music_accessibility # TODO - url is not working
   parent:
     title: Wikipedia
@@ -81,7 +81,7 @@ music-accessibility:
 audio-restoration-challenges:
   type: Article
   title: Audio restoration
-  date: 2024-08-19
+  date: 2024-08-20
   url: https://en.wikipedia.org/wiki/Audio_restoration
   parent:
     title: Wikipedia
@@ -89,7 +89,7 @@ audio-restoration-challenges:
 audio-bandwidth-history:
   type: Article
   title: Audio bandwidth
-  date: 2024-08-19
+  date: 2024-08-20
   url: https://en.wikipedia.org/wiki/Audio_bandwidth # TODO - url is not working
   parent:
     title: Wikipedia
@@ -97,7 +97,7 @@ audio-bandwidth-history:
 noise-in-early-recordings:
   type: Article
   title: Noise in early recordings
-  date: 2024-08-19
+  date: 2024-08-20
   url: https://en.wikipedia.org/wiki/Noise_in_early_recordings # TODO - url is not working
   parent:
     title: Wikipedia
@@ -105,7 +105,7 @@ noise-in-early-recordings:
 analog-media-degradation:
   type: Article
   title: Analog recording
-  date: 2024-08-19
+  date: 2024-08-20
   url: https://en.wikipedia.org/wiki/Analog_recording # TODO - to nie jest najlepsze źródło
   parent:
     title: Wikipedia
@@ -113,7 +113,7 @@ analog-media-degradation:
 storage-conditions-impact:
   type: Article
   title: Storage conditions
-  date: 2024-08-19
+  date: 2024-08-20
   url: https://en.wikipedia.org/wiki/Storage_conditions # TODO - url is not working
   parent:
     title: Wikipedia
@@ -121,7 +121,7 @@ storage-conditions-impact:
 print-through-effect:
   type: Article
   title: Print-through
-  date: 2024-08-19
+  date: 2024-08-20
   url: https://en.wikipedia.org/wiki/Print-through
   parent:
     title: Wikipedia
@@ -129,7 +129,7 @@ print-through-effect:
 brahms-recording:
   type: Article
   title: Johannes Brahms
-  date: 2024-08-19
+  date: 2024-08-20
   url: https://en.wikipedia.org/wiki/Johannes_Brahms
   parent:
     title: Wikipedia
@@ -137,7 +137,7 @@ brahms-recording:
 early-blues-recordings:
   type: Article
   title: Blues
-  date: 2024-08-19
+  date: 2024-08-20
   url: https://en.wikipedwia.org/wiki/Blues
   parent:
     title: Wikipedia
@@ -145,7 +145,7 @@ early-blues-recordings:
 playback-equipment-challenges:
   type: Article
   title: Playback equipment
-  date: 2024-08-19
+  date: 2024-08-20
   url: https://en.wikipedia.org/wiki/Playback_equipment # TODO - url is not working
   parent:
     title: Wikipedia
@@ -153,7 +153,7 @@ playback-equipment-challenges:
 music-digitization-challenges:
   type: Article
   title: Music digitization
-  date: 2024-08-19
+  date: 2024-08-20
   url: https://en.wikipedia.org/wiki/Music_digitization # TODO - url is not working
   parent:
     title: Wikipedia
@@ -161,7 +161,7 @@ music-digitization-challenges:
 preservation-storage-requirements:
   type: Article
   title: Preservation (library and archival science)
-  date: 2024-08-19
+  date: 2024-08-20
   url: https://en.wikipedia.org/wiki/Preservation_(library_and_archival_science)
   parent:
     title: Wikipedia
@@ -169,7 +169,7 @@ preservation-storage-requirements:
 ethical-considerations-in-audio-restoration:
   type: Article
   title: Audio restoration
-  date: 2024-08-19
+  date: 2024-08-20
   url: https://en.wikipedia.org/wiki/Audio_restoration # TODO - to nie jest najlepsze źródło
   parent:
     title: Wikipedia
@@ -177,7 +177,7 @@ ethical-considerations-in-audio-restoration:
 ai-in-audio-restoration:
   type: Article
   title: Audio restoration
-  date: 2024-08-19
+  date: 2024-08-20
   url: https://en.wikipedia.org/wiki/Audio_restoration # TODO - to nie jest najlepsze źródło
   parent:
     title: Wikipedia
@@ -185,7 +185,7 @@ ai-in-audio-restoration:
 cultural-value-of-music-archives:
   type: Article
   title: Music archive
-  date: 2024-08-19
+  date: 2024-08-20
   url: https://en.wikipedia.org/wiki/Music_archive # TODO - to nie jest najlepsze źródło
   parent:
     title: Wikipedia
@@ -193,7 +193,7 @@ cultural-value-of-music-archives:
 preservation-of-audio-heritage:
   type: Article
   title: Audio preservation
-  date: 2024-08-19
+  date: 2024-08-20
   url: https://en.wikipedia.org/wiki/Audio_preservation # TODO - url is not working
   parent:
     title: Wikipedia
@@ -201,7 +201,7 @@ preservation-of-audio-heritage:
 historical-performance-practice:
   type: Article
   title: Historically informed performance
-  date: 2024-08-19
+  date: 2024-08-20
   url: https://en.wikipedia.org/wiki/Historically_informed_performance
   parent:
     title: Wikipedia
@@ -209,7 +209,7 @@ historical-performance-practice:
 musicological-research-methods:
   type: Article
   title: Musicology
-  date: 2024-08-19
+  date: 2024-08-20
   url: https://en.wikipedia.org/wiki/Musicology
   parent:
     title: Wikipedia
@@ -217,7 +217,7 @@ musicological-research-methods:
 performance-practice-evolution:
   type: Article
   title: Performance practice
-  date: 2024-08-19
+  date: 2024-08-20
   url: https://en.wikipedia.org/wiki/Performance_practice
   parent:
     title: Wikipedia
@@ -225,7 +225,7 @@ performance-practice-evolution:
 composer-performances:
   type: Article
   title: Composer
-  date: 2024-08-19
+  date: 2024-08-20
   url: https://en.wikipedia.org/wiki/Composer # TODO - nie najlepsze źródło
   parent:
     title: Wikipedia
@@ -233,7 +233,7 @@ composer-performances:
 music-audio-quality-perception:
   type: Article
   title: Audio quality measurement
-  date: 2024-08-19
+  date: 2024-08-20
   url: https://en.wikipedia.org/wiki/Audio_quality_measurement # TODO - złe źródło - tekst mówi "badania wskazują"
   parent:
     title: Wikipedia
@@ -241,7 +241,7 @@ music-audio-quality-perception:
 rediscovery-of-forgotten-music:
   type: Article
   title: Rediscovery
-  date: 2024-08-19
+  date: 2024-08-20
   url: https://en.wikipedia.org/wiki/Rediscovery # TODO - złe źródło
   parent:
     title: Wikipedia
@@ -249,7 +249,7 @@ rediscovery-of-forgotten-music:
 nuance-in-restored-recordings:
   type: Article
   title: Audio restoration
-  date: 2024-08-19
+  date: 2024-08-20
   url: https://en.wikipedia.org/wiki/Audio_restoration # TODO - to nie jest najlepsze źródło
   parent:
     title: Wikipedia
@@ -257,7 +257,7 @@ nuance-in-restored-recordings:
 remastered-recordings-market:
   type: Article
   title: Remaster
-  date: 2024-08-19
+  date: 2024-08-20
   url: https://en.wikipedia.org/wiki/Remaster
   parent:
     title: Wikipedia
@@ -265,7 +265,7 @@ remastered-recordings-market:
 classical-music-reissues:
   type: Article
   title: Classical music
-  date: 2024-08-19
+  date: 2024-08-20
   url: https://en.wikipedia.org/wiki/Classical_music # TODO - nie najlepsze źródło
   parent:
     title: Wikipediacv
@@ -273,7 +273,7 @@ classical-music-reissues:
 revenue-from-restored-recordings:
   type: Article
   title: Music industry
-  date: 2024-08-19
+  date: 2024-08-20
   url: https://en.wikipedia.org/wiki/Music_industry # TODO - nie najlepsze źródło
   parent:
     title: Wikipedia
@@ -281,7 +281,7 @@ revenue-from-restored-recordings:
 future-of-audio-restoration:
   type: Article
   title: Audio restoration
-  date: 2024-08-19
+  date: 2024-08-20
   url: https://en.wikipedia.org/wiki/Audio_restoration # TODO - to nie jest najlepsze źródło
   parent:
     title: Wikipedia
@@ -289,7 +289,7 @@ future-of-audio-restoration:
 noise-reduction-techniques:
   type: Article
   title: Noise reduction
-  date: 2024-08-19
+  date: 2024-08-20
   url: https://en.wikipedia.org/wiki/Noise_reduction
   parent:
     title: Wikipedia
@@ -297,7 +297,7 @@ noise-reduction-techniques:
 bandwidth-extension-methods:
   type: Article
   title: Bandwidth extension
-  date: 2024-08-19
+  date: 2024-08-20
   url: https://en.wikipedia.org/wiki/Bandwidth_extension
   parent:
     title: Wikipedia
@@ -305,7 +305,7 @@ bandwidth-extension-methods:
 audio-inpainting-techniques:
   type: Article
   title: Audio inpainting
-  date: 2024-08-19
+  date: 2024-08-20
   url: https://en.wikipedia.org/wiki/Audio_inpainting
   parent:
     title: Wikipedia
@@ -313,7 +313,7 @@ audio-inpainting-techniques:
 gan-in-audio-processing:
   type: Article
   title: Generative adversarial network
-  date: 2024-08-19
+  date: 2024-08-20
   url: https://en.wikipedia.org/wiki/Generative_adversarial_network # TODO - to nie jest najlepsze źródło
   parent:
     title: Wikipedia
@@ -321,7 +321,7 @@ gan-in-audio-processing:
 gan-image-restoration:
   type: Article
   title: Generative adversarial network
-  date: 2024-08-19
+  date: 2024-08-20
   url: https://en.wikipedia.org/wiki/Generative_adversarial_network # TODO - to nie jest najlepsze źródło
   parent:
     title: Wikipedia
@@ -329,7 +329,7 @@ gan-image-restoration:
 audio-quality-perception:
   type: Article
   title: Audio quality measurement
-  date: 2024-08-19
+  date: 2024-08-20
   url: https://en.wikipedia.org/wiki/Audio_quality_measurement # TODO - złe źródło
   parent:
     title: Wikipedia
@@ -360,7 +360,7 @@ audio-quality-perception:
 
 6:
   type: Article
-  author: ["Nogales, A.", "Donaher, S.", "García-Tejedor ´A."]
+  author: ["Nogales, A.", "Donaher, S.", "García-Tejedor, A."]
   title: "A deep learning framework for audio restoration using Convolutional/ Deconvolutional Deep Autoencoders"
   date: 2022-03-21
   parent:
@@ -381,3 +381,84 @@ audio-quality-perception:
   date: 2021
   parent:
     title: "Nanjing University of Posts and Telecommunications"
+
+4:
+  type: Article
+  author: ["Casey, O.", "Dave, R.", "Seliya, N.", "Sowells Boone, E.R."]
+  title: "Machine Learning: Challenges, Limitations, and Compatibility for Audio Restoration Processes"
+  date: 2021
+  parent:
+    title: "University of Wisconsin-Eau Claire"
+
+12:
+  type: Thesis
+  author: "Coleman, Quinn"
+  title: "MACHINE LEARNING APPROACHES TO HISTORIC MUSIC RESTORATION"
+  date: 2021-03
+  parent:
+    title: "California Polytechnic State University, San Luis Obispo"
+
+13:
+  type: Article
+  author: ["Lemercier, J.M.", "Richter, J.", "Welker, S.", "Valimaki, V.", "Gerkmann, T."]
+  title: "Diffusion Models for Audio Restoration"
+  date: 2024-07-15
+  parent:
+    title: "Signal Processing (SP), Department of Informatics, Universitat Hamburg, Germany Acoustics Lab, Department of Information and Communications Engineering, Aalto University, Espoo, Finland"
+
+14:
+  type: Article
+  author: ["Lohani, B.", "Gautam, C.K.", "Kushwaha, P.K.", "Gupta, A."]
+  title: "Deep Learning Approaches for Enhanced Audio Quality Through Noise Reduction"
+  date: 2024-05-09
+  parent:
+    title: "IEEE"
+
+15:
+  type: Article
+  author: ["Labrèche, G.", "Guzman, C.", "Bammens, S."]
+  title: "Generative AI... in Space! Adversarial Networks to Denoise Images Onboard the OPS-SAT-1 Spacecraft"
+  date: 2024-03-02
+  parent:
+    title: "IEEE"
+
+16:
+  type: Article
+  author: ["Moliner, E.", "Elvander, F.", "Välimäki, V."]
+  title: "Blind Audio Bandwidth Extension: A Diffusion-Based Zero-Shot Approach"
+  date: 2024-01-30
+  parent:
+    title: "IEEE/ACM Transactions on Audio, Speech, and Language Processing"
+
+17:
+  type: Article
+  title: "AI Gets Creative"
+  author: ["Mrak, M."]
+  date: 2019-10-21
+  parent:
+    title: "Association for Computing Machinery"
+
+3:
+  type: Article
+  author: "Gupta, Arpana"
+  title: "Restoring and reconstructing old and damaged compositions using AI to preserve the musical heritage"
+  date: 2023-07-23
+  url: "https://medium.com/illumination/restoring-and-reconstructing-old-and-damaged-compositions-using-ai-to-preserve-the-musical-heritage-b5eeb20b0039"
+  parent:
+    title: "medium.com"
+
+18:
+  type: Article
+  author: ["Bertin-Mahieux, T.", "Grindlay, G.", "Weiss, R.J.", "Ellis, D.P.W."]
+  title: "Evaluating music sequence models through missing data"
+  date: 2011-05-22
+  parent:
+    title: "IEEE"
+
+10:
+  type: Article
+  author: ["Marus Coldenhoff, J.", "Ren, Z."]
+  title: "Music Super-resolution with Spectral Flatness Loss and HiFi-GAN Discriminators"
+  date: 2021
+  parent:
+    title: "EPFL, Switzerland"
