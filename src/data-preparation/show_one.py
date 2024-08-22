@@ -4,47 +4,50 @@ import matplotlib.pyplot as plt
 import librosa
 
 
-def load_first_stft(directory):
-    for filename in os.listdir(directory):
-        if filename.endswith('.npz'):
-            file_path = os.path.join(directory, filename)
-            with np.load(file_path) as data:
-                # Assuming the STFT data is stored under a key 'stft'
-                # If it's stored under a different key, you'll need to change this
-                stft = data['stft']
-                return stft, filename
-    return None, None
+def load_stft_file(file_path):
+    with np.load(file_path) as data:
+        return data['stft']
 
 
-def visualize_stft(stft, output_file, sr=22050, hop_length=512):
-    plt.figure(figsize=(12, 8))
-    librosa.display.specshow(librosa.amplitude_to_db(np.abs(stft), ref=np.max),
-                             sr=sr, hop_length=hop_length, x_axis='time', y_axis='hz')
-    plt.colorbar(format='%+2.0f dB')
-    plt.title('STFT Magnitude')
+def visualize_and_save_stft(clean_stft, vinyl_stft, sample_id, sr=22050, hop_length=512):
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 8))
+
+    # Plot clean STFT
+    img1 = librosa.display.specshow(librosa.amplitude_to_db(np.abs(clean_stft), ref=np.max),
+                                    sr=sr, hop_length=hop_length, x_axis='time', y_axis='hz', ax=ax1)
+    ax1.set_title('Clean STFT', fontsize=16)
+    fig.colorbar(img1, ax=ax1, format='%+2.0f dB')
+
+    # Plot vinyl STFT
+    img2 = librosa.display.specshow(librosa.amplitude_to_db(np.abs(vinyl_stft), ref=np.max),
+                                    sr=sr, hop_length=hop_length, x_axis='time', y_axis='hz', ax=ax2)
+    ax2.set_title('Vinyl Crackle STFT', fontsize=16)
+    fig.colorbar(img2, ax=ax2, format='%+2.0f dB')
+
+    plt.suptitle(f'STFT Comparison (Sample ID: {sample_id})', fontsize=20)
     plt.tight_layout()
-    plt.savefig(output_file)
+
+    output_file = f'stft_comparison_{sample_id}.png'
+    plt.savefig(output_file, dpi=300, bbox_inches='tight')
     plt.close()
+    print(f"Visualization saved to {output_file}")
 
 
 def main():
-    stft_dir = "../data/converted/stft_segments"
-    output_dir = "./stft_visualizations"
-    os.makedirs(output_dir, exist_ok=True)
+    # Define the specific file to visualize
+    sample_id = "2318-54"
+    clean_dir = "../data/converted/stft_segments"
+    vinyl_dir = "../data/vinyl_crackle/stft_segments"
 
-    print("Loading the first STFT file...")
-    stft_data, filename = load_first_stft(stft_dir)
+    # Load clean and vinyl STFT files
+    clean_file = os.path.join(clean_dir, f"{sample_id}_stft.npz")
+    vinyl_file = os.path.join(vinyl_dir, f"{sample_id}_stft.npz")
 
-    if stft_data is not None:
-        print(f"STFT loaded successfully from file: {filename}")
-        print(f"STFT shape: {stft_data.shape}")
+    clean_stft = load_stft_file(clean_file)
+    vinyl_stft = load_stft_file(vinyl_file)
 
-        output_file = os.path.join(output_dir, f"{os.path.splitext(filename)[0]}_visualization.png")
-        print(f"Saving the STFT visualization to {output_file}...")
-        visualize_stft(stft_data, output_file)
-        print("Visualization saved successfully.")
-    else:
-        print("No STFT files found in the specified directory.")
+    # Visualize and save STFTs
+    visualize_and_save_stft(clean_stft, vinyl_stft, sample_id)
 
 
 if __name__ == "__main__":

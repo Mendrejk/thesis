@@ -397,21 +397,6 @@ Spis treści
      - Obserwacja poprawy jakości spektrogramów w trakcie procesu uczenia
      - Dyskusja na temat niedostatecznej poprawy jakości do uzyskania użytecznych wyników audio
   
-  7.2. Porównanie z innymi metodami
-     - Zestawienie wyników z tradycyjnymi technikami przetwarzania sygnałów
-     - Analiza porównawcza z innymi podejściami opartymi na uczeniu maszynowym
-     - Omówienie potencjalnych przyczyn niższej skuteczności proponowanej metody
-  
-  7.3. Analiza procesu uczenia
-     - Prezentacja krzywych uczenia dla generatora i dyskryminatora
-     - Omówienie dynamiki treningu GAN i potencjalnych problemów (np. niestabilność, mode collapse)
-     - Analiza wpływu różnych funkcji strat na jakość generowanych spektrogramów
-  
-  7.4. Studium przypadku: próba rekonstrukcji wybranego historycznego nagrania
-     - Opis wybranego nagrania i jego charakterystycznych cech
-     - Prezentacja wyników przetwarzania przez sieć GAN
-     - Analiza przyczyn niepowodzenia w uzyskaniu słyszalnej poprawy jakości
-  
   7.5. Dyskusja wyników
      - Omówienie głównych wyzwań napotkanych podczas eksperymentów
      - Analiza potencjalnych przyczyn niedostatecznej jakości rekonstrukcji audio
@@ -1255,6 +1240,99 @@ W ramach badań przeprowadzono eksperymenty mające na celu optymalizację archi
 W ramach analizy wpływu poszczególnych komponentów na jakość rekonstrukcji, przeprowadzono badania ukierunkowane na różne aspekty modelu. W obszarze funkcji strat dokonano eksperymentów dotyczących wpływu różnych wag przypisanych poszczególnym komponentom oraz analizie efektywności funkcji takich jak spectral flatness loss czy phase-aware loss. Zweryfikowano także skuteczność różnych technik normalizacji, w tym batch normalization i instance normalization w generatorze.
 
 Wyniki eksperymentów były analizowane poprzez wizualizację spektrogramów STFT, monitorowanie krzywych między epokami, oraz analizę metryk algorytmu podczas procesu uczenia. Mimo że badanie nie przyniosło oczekiwanych rezultatów w zakresie jakości rekonstrukcji audio, dostarczyło cennych informacji na temat zachowania modelu GAN w kontekście przetwarzania sygnałów dźwiękowych oraz wskazało potencjalne kierunki dalszych badań i ulepszeń.
+
+
+= 7. Analiza wyników
+
+
+== 7.1. Ocena obiektywna
+
+W ramach przeprowadzonego badania nad rekonstrukcją nagrań dźwiękowych z wykorzystaniem sieci GAN zastosowano obiektywne metody analizy celem oceny skuteczności opracowanego modelu. Proces ewaluacji koncentrował się na trzech głównych aspektach: *analizie wizualizacji spektrogramów STFT*, *obserwacji funkcji strat* w trakcie treningu oraz *testach odsłuchowych z wykorzystaniem odwrotnej transformaty STFT*.
+
+Analiza wizualizacji spektrogramów STFT stanowiła kluczowy element oceny obiektywnej. Porównanie spektrogramów oryginalnych nagrań, ich wersji z dodanymi szumami winylowymi oraz rekonstrukcji generowanych przez sieć GAN pozwoliło na bezpośrednią obserwację skuteczności modelu w usuwaniu charakterystycznych zniekształceń. 
+
+#figure(
+  image("fig1.png"),
+  caption: [Spektogram oryginalnego fragmentu]
+) <fig1>
+
+#figure(
+  image("fig2.png"),
+  caption: [Spektogram fragmentu z dodanym szumem winylowym]
+) <fig2>
+
+#figure(
+  image("fig3.png"),
+  caption: [Spektogram fragmentu rekonstrukcji w początkowej fazie treningu]
+) <fig3>
+
+#figure(
+  image("fig4.png"),
+  caption: [Spektogram fragmentu rekonstrukcji w końcowej fazie treningu]
+) <fig4>
+
+Analiza tych wizualizacji ujawniła, że model był wstanie w pewnym stopniu zniwelować trzaski charakterystyczne dla płyt winylowych, co widoczne było jako redukcja pionowych linii na spektrogramach reprezentujących nagłe, krótkotrwałe zakłócenia. Jednocześnie model nauczył się uwydatnić fale oznaczające wysokie dźwięki znajdujące się w oryginalnej próbce. *Model uczył się poprawnie i dążył w kierunku oryginalnych próbek, jednak nie był w stanie zniwelować szumów które wygenerował w początkowych fazach uczenia.*
+
+Obserwacja funkcji strat w trakcie procesu uczenia stanowiła drugi istotny aspekt oceny obiektywnej. Analiza ta pozwoliła na śledzenie postępów w zdolności modelu do rekonstrukcji nagrań w miarę upływu epok treningu. Poniżej przedstawiono przykładowe wartości strat uzyskane podczas procesu uczenia:
+
+#figure(
+  table(
+    columns: 10,
+    [epoka], [0], [1], [2], [...], [14], [15], [16], [...], [20],
+    [wartość funkcji straty], [249], [197], [169], [...], [44], [49], [45], [...], [46]
+  )
+)
+
+Obserwacja tych wartości ujawnia interesującą tendencję. W początkowych fazach treningu widoczny jest znaczący spadek wartości funkcji straty, co sugeruje, że model uczył się efektywnie redukować błędy rekonstrukcji. Jednakże, około 14-16 epoki wartość funkcji straty osiągnęła minimum (około 44-45) i przestała znacząco spadać, utrzymując się na podobnym poziomie w kolejnych epokach.
+
+To zjawisko jest niepokojące, biorąc pod uwagę, że jakość rekonstrukcji audio pozostawała niezadowalająca. Sugeruje to, że model osiągnął *minimum lokalne*, które nie odpowiadało satysfakcjonującemu rozwiązaniu problemu rekonstrukcji. Innymi słowy, funkcja straty przestała dostarczać użytecznych informacji dla dalszej optymalizacji modelu, mimo że nie był on jeszcze w stanie generować wysokiej jakości rekonstrukcji audio.
+
+Trzecim elementem oceny obiektywnej były testy odsłuchowe z wykorzystaniem odwrotnej transformaty STFT. W tym procesie, spektrogramy wygenerowane przez model były przekształcane z powrotem na sygnały audio w formacie MP3. Ta metoda miała na celu umożliwienie bezpośredniej oceny słuchowej jakości rekonstrukcji, stanowiąc istotne uzupełnienie analizy wizualnej i numerycznej.
+
+Wyniki tych testów odsłuchowych okazały się jednak *skrajnie niezadowalające*. We wszystkich próbach, niezależnie od etapu treningu czy konfiguracji modelu, uzyskane sygnały audio składały się wyłącznie z niezrozumiałych szumów. Żadna z wygenerowanych próbek nie wykazywała cech przypominających muzykę czy jakiekolwiek rozpoznawalne dźwięki. Ta obserwacja stanowi najbardziej dobitne świadectwo nieefektywności modelu w zadaniu rekonstrukcji nagrań muzycznych, podkreślając znaczącą rozbieżność między częściowymi poprawami widocznymi na spektrogramach a faktyczną jakością dźwięku percypowaną przez ludzkie ucho.
+
+#linebreak()
+
+Obserwacja zmian w spektrogramach w trakcie procesu uczenia ujawniła pewne interesujące tendencje. W początkowych fazach treningu, model wykazywał zdolność do częściowej redukcji najbardziej widocznych artefaktów, takich jak pionowe linie reprezentujące trzaski charakterystyczne dla płyt winylowych. Jednakże, w wielu podejściach do uczenia, w miarę postępu treningu, pojawiały się niepokojące zjawiska:
+
+#figure(
+  image("fig5.png"),
+  caption: [Spektogram fragmentu rekonstrukcji na początku błędów w nauce]
+) <fig5>
+
+#figure(
+  image("fig6.png"),
+  caption: [Spektogram fragmentu rekonstrukcji pod koniec błędów w nauce]
+) <fig6>
+
+Na powyższej wizualizacji można zaobserwować, że model po kilkunastu epokach uczenia omylnie nauczył się podmieniać wartości zerami, odpowiadające dźwiękom na poziomie 0dB.
+
+Dyskusja na temat niedostatecznej poprawy jakości do uzyskania użytecznych wyników audio musi uwzględnić kilka kluczowych aspektów:
+
+1. Złożoność zadania: Rekonstrukcja pełnych nagrań muzycznych okazała się znacznie bardziej skomplikowana niż początkowo zakładano. Model musiał nie tylko usunąć szumy, ale także odtworzyć subtelne detale muzyczne, co stanowiło wyzwanie wykraczające poza możliwości obecnej architektury.
+
+2. Nieadekwatność funkcji strat: Mimo zastosowania różnorodnych funkcji strat, mogły one nie w pełni odzwierciedlać percepcyjne aspekty jakości dźwięku. To mogło prowadzić do optymalizacji modelu w kierunku, który nie przekładał się bezpośrednio na poprawę słyszalnej jakości.
+
+3. Problem generalizacji: Model mógł mieć trudności z generalizacją nauczonych wzorców na różnorodne style muzyczne i typy instrumentacji obecne w zbiorze testowym.
+
+4. Ograniczenia architektury: Zastosowana architektura GAN, mimo swojej złożoności, mogła nie być wystarczająco dostosowana do specyfiki rekonstrukcji sygnałów audio. W szczególności, model mógł mieć trudności z zachowaniem spójności fazowej, co jest kluczowe dla naturalnego brzmienia dźwięku.
+
+5. Problemy z danymi treningowymi: Jakość i reprezentatywność danych treningowych mogły nie być wystarczające do nauczenia modelu efektywnej rekonstrukcji. W szczególności, symulowane szumy winylowe mogły nie w pełni oddawać złożoność rzeczywistych zniekształceń występujących w historycznych nagraniach.
+
+6. Niestabilność treningu GAN: Charakterystyczna dla architektury GAN niestabilność procesu uczenia mogła prowadzić do problemów z konwergencją, co objawiało się niekonsekwentną jakością generowanych spektrogramów w różnych fazach treningu.
+
+Podsumowując, obiektywna ocena wyników wykazała, że opracowany model GAN, mimo pewnych obiecujących aspektów widocznych w analizie spektrogramów, nie był w stanie osiągnąć zadowalającego poziomu rekonstrukcji nagrań dźwiękowych. Całkowity brak rozpoznawalnych elementów muzycznych w wygenerowanych próbkach audio podkreśla głęboką rozbieżność między częściowymi poprawami obserwowanymi w domenie częstotliwościowej a faktyczną percepcją dźwięku.
+
+Ta sytuacja uwypukla złożoność zadania rekonstrukcji nagrań muzycznych i wskazuje na potrzebę dalszych, pogłębionych badań w tym obszarze. Przyszłe prace powinny skupić się na:
+
+1. Udoskonaleniu architektury modelu, ze szczególnym uwzględnieniem zachowania spójności fazowej sygnału.
+2. Opracowaniu bardziej zaawansowanych funkcji strat, które lepiej odzwierciedlałyby percepcyjne aspekty jakości dźwięku.
+3. Zwiększeniu rozmiaru i różnorodności zbioru danych treningowych, z możliwym uwzględnieniem rzeczywistych, a nie tylko symulowanych, zniekształceń.
+4. Eksploracji alternatywnych podejść do generatywnego modelowania dźwięku, takich jak modele autoregresyjne czy modele dyfuzyjne.
+
+Mimo że obecne wyniki nie spełniły oczekiwań w zakresie praktycznej użyteczności, stanowią one cenny wkład w zrozumienie wyzwań związanych z zastosowaniem technik uczenia maszynowego do rekonstrukcji nagrań dźwiękowych i otwierają nowe ścieżki dla przyszłych badań w tej dziedzinie.
+
+
 
 #pagebreak(weak: true)
 
