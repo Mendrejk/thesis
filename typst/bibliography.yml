@@ -559,3 +559,12 @@ musicnet:
   date: 2024-08-19
   parent:
     title: "kaggle.com"
+
+vggish:
+  type: Web
+  autor: "Taylor, H."
+  title: "torchvggish"
+  url: "https://github.com/harritaylor/torchvggish"
+  date: 2024-08-19
+  parent:
+    title: "github.com"

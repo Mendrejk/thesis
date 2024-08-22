@@ -107,7 +107,6 @@ Opiekun pracy
 
 11. Inne techniki:
     - Feature Extractor (VGGish)
-    - Wasserstein Loss
 
 == Skrypty przygotowania danych:
 
@@ -1003,7 +1002,11 @@ Warto podkreślić, że cały proces przygotowania danych został zoptymalizowan
 
 W ramach badań nad rekonstrukcją nagrań dźwiękowych opracowano architekturę Generatywnej Sieci Przeciwstawnej (GAN), składającą się z generatora i dyskryminatora. Model ten został zaprojektowany z myślą o efektywnym przetwarzaniu spektrogramów STFT, które stanowią reprezentację danych wejściowych.
 
-Generator, będący kluczowym elementem architektury, wykorzystuje strukturę enkoder-dekoder z połączeniami skip. Enkoder składa się z czterech bloków konwolucyjnych, każdy zawierający warstwę konwolucyjną z normalizacją spektralną, normalizację wsadową (Batch Normalization) oraz funkcję aktywacji LeakyReLU. Struktura ta stopniowo redukuje wymiarowość przestrzenną danych wejściowych, jednocześnie zwiększając liczbę kanałów cech.
+=== Generator
+
+Generator, będący kluczowym elementem architektury, wykorzystuje *zmodyfikowaną strukturę U-Net*. Wybór tej architektury podyktowany był jej skutecznością w zadaniach przetwarzania obrazów, które można zaadaptować do analizy spektrogramów. Wprowadzono jednak szereg modyfikacji dostosowujących model do specyfiki rekonstrukcji nagrań audio:
+
+W przeciwieństwie do klasycznego U-Net, zastosowano normalizację spektralną w warstwach konwolucyjnych, co pomaga w stabilizacji treningu GAN i poprawia jakość generowanych wyników.
 
 ```python
 def encoder_block(self, in_channels, out_channels):
@@ -1014,7 +1017,7 @@ def encoder_block(self, in_channels, out_channels):
     )
 ```
 
-Centralną część generatora stanowi bottleneck, składający się z trzech bloków rezydualnych. Bloki te, zaimplementowane jako klasa `ResidualBlock`, umożliwiają efektywne przetwarzanie cech na wysokim poziomie abstrakcji, zachowując jednocześnie informacje przestrzenne:
+Centralną część generatora stanowi bottleneck składający się z trzech bloków rezydualnych. Ta modyfikacja pozwala na lepsze przetwarzanie cech na wysokim poziomie abstrakcji.
 
 ```python
 class ResidualBlock(nn.Module):
@@ -1033,7 +1036,9 @@ class ResidualBlock(nn.Module):
         return x + residual
 ```
 
-Dekoder generatora składa się z czterech bloków dekonwolucyjnych, które stopniowo zwiększają rozdzielczość przestrzenną, odtwarzając oryginalny kształt danych wejściowych. Każdy blok dekodera wykorzystuje warstwę dekonwolucyjną z normalizacją spektralną, normalizację wsadową oraz funkcję aktywacji LeakyReLU:
+Zamiast standardowej funkcji aktywacji ReLU, zastosowano LeakyReLU, co pomaga w uniknięciu problemu "umierających neuronów" i poprawia gradient przepływ w sieci.
+
+Dekoder został dostosowany do specyfiki danych audio poprzez zastosowanie warstw dekonwolucyjnych z normalizacją spektralną:
 
 ```python
 def decoder_block(self, in_channels, out_channels):
@@ -1044,8 +1049,11 @@ def decoder_block(self, in_channels, out_channels):
     )
 ```
 
-Istotnym elementem architektury generatora są połączenia skip między odpowiadającymi sobie warstwami enkodera i dekodera. Technika ta umożliwia bezpośredni przepływ informacji o niskim poziomie szczegółowości, co jest kluczowe dla zachowania drobnych detali w rekonstruowanych nagraniach.
+Podobnie jak w klasycznym U-Net, zastosowano połączenia skip między odpowiadającymi sobie warstwami enkodera i dekodera. Jest to kluczowe dla zachowania drobnych detali w rekonstruowanych nagraniach.
 
+Te modyfikacje pozwoliły na stworzenie architektury, która łączy zalety U-Net z specyficznymi wymaganiami rekonstrukcji nagrań audio w kontekście GAN.
+
+=== Dyskryminator
 Dyskryminator, drugi kluczowy komponent architektury GAN, wykorzystuje strukturę konwolucyjną. Składa się z pięciu bloków dyskryminatora, z których każdy zawiera warstwę konwolucyjną z normalizacją spektralną oraz funkcję aktywacji LeakyReLU:
 
 ```python
@@ -1056,31 +1064,22 @@ def discriminator_block(self, in_channels, out_channels):
     )
 ```
 
-W celu poprawy stabilności treningu i jakości generowanych wyników, w architekturze zastosowano szereg zaawansowanych technik normalizacji. Normalizacja spektralna została wykorzystana we wszystkich warstwach konwolucyjnych, zarówno w generatorze, jak i dyskryminatorze. Technika ta efektywnie kontroluje dynamikę gradientów, co przyczynia się do bardziej stabilnego procesu uczenia.
+W celu poprawy stabilności treningu i jakości generowanych wyników, w architekturze zastosowano szereg technik normalizacji. Normalizacja spektralna została wykorzystana we wszystkich warstwach konwolucyjnych, zarówno w generatorze, jak i dyskryminatorze. Technika ta efektywnie kontroluje dynamikę gradientów, co przyczynia się do bardziej stabilnego procesu uczenia.
 
 Ponadto, w generatorze zastosowano normalizację wsadową (Batch Normalization) po każdej warstwie konwolucyjnej. Metoda ta normalizuje aktywacje w obrębie mini-batcha, co pomaga w redukcji wewnętrznego przesunięcia kowariancyjnego i przyspiesza konwergencję modelu.
 
-Wykorzystanie spektrogramów STFT jako reprezentacji danych wejściowych stanowi kluczowy element proponowanej architektury. Spektrogramy te, obliczane z użyciem krótkoczasowej transformaty Fouriera, dostarczają bogatej reprezentacji czasowo-częstotliwościowej sygnału audio. Taka reprezentacja umożliwia modelowi efektywne przetwarzanie zarówno informacji o amplitudzie, jak i fazie sygnału, co jest kluczowe dla wysokiej jakości rekonstrukcji nagrań dźwiękowych.
-
-Opisana architektura GAN, łącząca zaawansowane techniki przetwarzania sygnałów z nowoczesnymi metodami uczenia maszynowego, stanowi solidną podstawę do dalszych badań nad rekonstrukcją historycznych nagrań dźwiękowych.
-
-???
-Przedstawiona architektura GAN wyróżnia się kilkoma innowacyjnymi aspektami. Połączenie technik normalizacji spektralnej i wsadowej w generatorze pozwala na efektywne kontrolowanie procesu uczenia, co jest szczególnie istotne w kontekście przetwarzania złożonych sygnałów audio. Zastosowanie bloków rezydualnych w bottleneck'u generatora umożliwia zachowanie istotnych cech sygnału na różnych poziomach abstrakcji, co jest kluczowe dla wiernej rekonstrukcji nagrań. Ponadto, praca bezpośrednio na spektrogramach STFT, z uwzględnieniem zarówno amplitudy, jak i fazy, pozwala na precyzyjne modelowanie charakterystyki częstotliwościowej i czasowej rekonstruowanych nagrań. Takie podejście otwiera nowe możliwości w dziedzinie cyfrowej restauracji historycznych materiałów dźwiękowych, potencjalnie przewyższając tradycyjne metody przetwarzania sygnałów w zakresie jakości i wierności odtwarzania.
-???
-
-#todo("Może warto wyjebać Wassersteina. A co z vgganish czy jak mu tam")
+Wykorzystanie spektrogramów STFT jako reprezentacji danych wejściowych stanowi kluczowy element proponowanej architektury. Spektrogramy te, obliczane z użyciem krótkoczasowej transformaty Fouriera, dostarczają bogatej reprezentacji czasowo-częstotliwościowej sygnału audio. Taka reprezentacja umożliwia modelowi efektywne przetwarzanie zarówno informacji o amplitudzie, jak i fazie sygnału, co jest kluczowe dla zadań rekonstrukcji nagrań dźwiękowych.
 
 
 == 6.3. Proces treningu i optymalizacji
 
-W ramach procesu treningu i optymalizacji opracowanego modelu GAN zastosowano szereg zaawansowanych technik, mających na celu poprawę stabilności uczenia i jakości generowanych wyników.
+W ramach procesu treningu i optymalizacji opracowanego modelu GAN zastosowano szereg technik mających na celu poprawę stabilności uczenia i jakości generowanych wyników.
 
-Implementacja funkcji strat stanowiła kluczowy element procesu optymalizacji. W modelu wykorzystano złożoną kombinację różnych funkcji strat, każda z przypisaną wagą, co pozwoliło na precyzyjne kierowanie procesem uczenia:
+Implementacja funkcji strat stanowiła kluczowy element procesu optymalizacji. W modelu wykorzystano kombinację różnych funkcji strat, każda z przypisaną wagą, co pozwoliło na precyzyjne kierowanie procesem uczenia:
 
 ```python
 self.loss_weights = {
-    'adversarial': 1.0,
-    'wasserstein': 1.0,
+    'adversarial': 2.5,
     'content': 10.0,
     'spectral_convergence': 0.1,
     'spectral_flatness': 0.1,
@@ -1102,15 +1101,13 @@ Spectral Flatness Loss: Ta funkcja straty ocenia różnicę w "płaskości" widm
 
 Phase-Aware Loss: Funkcja ta uwzględnia zarówno informacje o amplitudzie, jak i fazie sygnału. Jest to kluczowe w rekonstrukcji dźwięku, gdzie zachowanie prawidłowych relacji fazowych jest niezbędne dla uzyskania naturalnie brzmiącego rezultatu. Składa się z dwóch komponentów: straty amplitudy i straty fazy.
 
-Multi-Resolution STFT Loss: Ta zaawansowana funkcja straty analizuje sygnał w różnych skalach czasowo-częstotliwościowych. Wykorzystuje ona krótkoterminową transformatę Fouriera (STFT) o różnych rozmiarach okna, co pozwala na uchwycenie zarówno krótkoterminowych, jak i długoterminowych struktur w sygnale audio.
+Multi-Resolution STFT Loss: Funkcja analizuje sygnał w różnych skalach czasowo-częstotliwościowych. Wykorzystuje krótkoczasową transformatę Fouriera (STFT) o różnych rozmiarach okna, co pozwala na uchwycenie zarówno krótko- jak i długoczasowych struktur w sygnale audio.
 
-Time-Frequency Loss: Funkcja ta łączy w sobie stratę w dziedzinie czasu i częstotliwości. Uwzględnia zarówno bezpośrednie różnice w próbkach czasowych, jak i różnice w reprezentacji częstotliwościowej sygnału. Takie podejście zapewnia kompleksową ocenę jakości rekonstrukcji.
+Time-Frequency Loss: Funkcja ta łączy w sobie stratę w dziedzinie czasu i częstotliwości. Uwzględnia zarówno bezpośrednie różnice w próbkach czasowych, jak i różnice w reprezentacji częstotliwościowej sygnału.
 
 Signal-to-Noise Ratio (SNR) Loss: Ta funkcja straty opiera się na klasycznej mierze jakości sygnału - stosunku sygnału do szumu. W kontekście rekonstrukcji audio, "szumem" jest różnica między sygnałem wygenerowanym a docelowym. Funkcja ta promuje generowanie sygnałów o wysokim SNR, co przekłada się na lepszą jakość percepcyjną.
 
-Perceptual Loss: Wykorzystując pretrainowany model ekstrakcji cech (np. VGGish), funkcja ta porównuje wysokopoziomowe reprezentacje sygnału wygenerowanego i docelowego. Pozwala to na uwzględnienie bardziej abstrakcyjnych i percepcyjnie istotnych cech dźwięku, wykraczających poza proste porównania amplitud czy widm.
-
-Wasserstein Loss: Funkcja ta, oparta na metryce Wassersteina, oferuje alternatywne podejście do treningu GAN. W przeciwieństwie do klasycznej funkcji straty przeciwstawnej, Wasserstein Loss zapewnia bardziej stabilny gradient podczas treningu, co może prowadzić do lepszej zbieżności modelu, szczególnie w przypadku złożonych rozkładów danych, jakimi są sygnały audio.
+Perceptual Loss: Wykorzystując wstępnie nauczony model ekstrakcji cech *VGGish* @vggish, funkcja ta porównuje wysokopoziomowe reprezentacje sygnału wygenerowanego i docelowego. Pozwala to na uwzględnienie bardziej abstrakcyjnych i percepcyjnie istotnych cech dźwięku, wykraczających poza proste porównania amplitud czy widm.
 
 Optymalizacja modelu opierała się na algorytmie Adam z niestandardowymi parametrami beta:
 
@@ -1119,7 +1116,7 @@ g_optimizer = optim.Adam(gan.generator.parameters(), lr=g_lr, betas=(0.0, 0.9))
 d_optimizer = optim.Adam(gan.discriminator.parameters(), lr=d_lr, betas=(0.0, 0.9))
 ```
 
-Zastosowano technikę akumulacji gradientów, co pozwoliło na efektywne zwiększenie rozmiaru batcha bez zwiększania zużycia pamięci:
+Z powodu rozmiarów modelu oraz dużych plików treningowych, napotkano na problemy z rozmiarem batcha wynikające z przekroczenia limitu pamięci wirtualnej karty graficznej. Z tego powodu zastosowano technikę akumulacji gradientów, co pozwoliło na efektywne zwiększenie rozmiaru batcha bez zwiększania zużycia pamięci:
 
 ```python
 g_loss = g_loss / self.accumulation_steps
@@ -1151,7 +1148,7 @@ Instance Noise z mechanizmem annealing został użyty do stopniowego zmniejszani
 self.instance_noise *= self.instance_noise_anneal_rate
 ```
 
-Monitorowanie i wizualizacja procesu treningu zostały zrealizowane za pomocą dedykowanych callbacków. LossVisualizationCallback umożliwiał śledzenie i wizualizację różnych komponentów funkcji straty w czasie rzeczywistym:
+Monitorowanie i wizualizacja procesu treningu zostały zrealizowane za pomocą dedykowanych metod Callback. LossVisualizationCallback umożliwiał śledzenie i wizualizację różnych komponentów funkcji straty w czasie rzeczywistym:
 
 ```python
 loss_visualization_callback = LossVisualizationCallback(log_dir=run_log_dir)
@@ -1168,15 +1165,12 @@ if early_stopping_callback(epoch, val_loss, gan):
     break
 ```
 
-Zapisywanie checkpointów umożliwiło zachowanie stanu modelu w regularnych odstępach czasu, co pozwoliło na wznowienie treningu w przypadku przerwania:
+Zapisywanie checkpointów umożliwiło zachowanie stanu modelu w regularnych odstępach czasu, co pozwoliło na wznowienie treningu w przypadku nagłego przerwania:
 
 ```python
 checkpoint_callback = CheckpointCallback(checkpoint_dir)
 checkpoint_callback(epoch, gan)
 ```
-
-Opisane techniki optymalizacji i monitorowania procesu treningu przyczyniły się do zwiększenia efektywności uczenia modelu GAN oraz umożliwiły dokładną analizę jego zachowania w trakcie treningu. Dzięki temu możliwe było precyzyjne dostrajanie parametrów modelu i funkcji straty, co w rezultacie przełożyło się na poprawę jakości rekonstruowanych nagrań dźwiękowych.
-
 
 == 6.4. Charakterystyka kodu źródłowego
 
@@ -1197,60 +1191,24 @@ Główne moduły projektu obejmują:
 Kluczowe klasy i funkcje w implementacji sieci GAN obejmują:
 
 - Klasa `AudioEnhancementGAN`: Centralna klasa projektu, integrująca generator i dyskryminator oraz implementująca logikę treningu.
-  ```python
-  class AudioEnhancementGAN(nn.Module):
-      def __init__(self, generator, discriminator, feature_extractor=None, accumulation_steps=1):
-          super().__init__()
-          self.generator = generator
-          self.discriminator = discriminator
-          # ...
-  ```
 
 - Klasy `Generator` i `Discriminator`: Implementują odpowiednio architekturę generatora i dyskryminatora.
-  ```python
-  class Generator(nn.Module):
-      def __init__(self, input_shape=(2, 1025, 862)):
-          super().__init__()
-          # ...
 
-  class Discriminator(nn.Module):
-      def __init__(self, input_shape=(2, 1025, 862)):
-          super().__init__()
-          # ...
-  ```
+- Funkcja `generator_loss`: Implementuje funkcję straty dla generatora, łączącą różne komponenty straty.
 
-- Funkcja `generator_loss`: Implementuje złożoną funkcję straty dla generatora, łączącą różne komponenty straty.
-  ```python
-  def generator_loss(y_true, y_pred, fake_output, noise_estimate, feature_extractor=None, weights=None):
-      # ...
-  ```
+Projekt w szerokim zakresie wykorzystuje biblioteki PyTorch, librosa i pydub:
 
-Projekt intensywnie wykorzystuje biblioteki PyTorch, librosa i pydub:
-
-- PyTorch służy jako podstawowy framework do implementacji i treningu sieci neuronowych.
+- PyTorch służy jako podstawowy framework implementacji i treningu sieci neuronowych.
 - Librosa jest wykorzystywana do zaawansowanego przetwarzania sygnałów audio, w szczególności do obliczania i manipulacji spektrogramami STFT.
 - Pydub znajduje zastosowanie w procesie przygotowania danych, umożliwiając konwersję i manipulację plikami audio.
 
 Mechanizmy przetwarzania równoległego i zarządzania pamięcią zostały zaimplementowane w celu optymalizacji wydajności:
 
 - Wykorzystanie `ProcessPoolExecutor` i `ThreadPoolExecutor` do równoległego przetwarzania plików audio:
-  ```python
-  with ProcessPoolExecutor(max_workers=num_cores) as executor:
-      futures = [executor.submit(process_audio_file, file_path, output_dir)
-                 for file_path, output_dir in all_tasks]
-  ```
 
 - Dynamiczne dostosowywanie liczby procesów do dostępnych zasobów CPU:
-  ```python
-  num_cores = min(multiprocessing.cpu_count(), MAX_CORES)
-  ```
 
 - Ograniczanie użycia pamięci RAM poprzez przetwarzanie danych w mniejszych porcjach:
-  ```python
-  while psutil.virtual_memory().available < MAX_RAM * 0.1:
-      pbar.set_description("Waiting for memory to be freed...")
-      psutil.wait_procs(psutil.Process().children(), timeout=5)
-  ```
 
 Implementacja interfejsu wiersza poleceń (CLI) do obsługi skryptów została zrealizowana z wykorzystaniem modułu `argparse`, co umożliwia elastyczne konfigurowanie parametrów treningu:
 
@@ -1258,8 +1216,8 @@ Implementacja interfejsu wiersza poleceń (CLI) do obsługi skryptów została z
 parser = argparse.ArgumentParser(description='Audio Enhancement GAN')
 parser.add_argument('--no-cuda', action='store_true', default=False,
                     help='disables CUDA training')
-parser.add_argument('--batch-size', type=int, default=5, metavar='N',
-                    help='input batch size for training (default: 5)')
+parser.add_argument('--batch-size', type=int, default=16, metavar='N',
+                    help='input batch size for training (default: 16)')
 parser.add_argument('--epochs', type=int, default=50, metavar='N',
                     help='number of epochs to train (default: 50)')
 args = parser.parse_args()
@@ -1268,12 +1226,12 @@ args = parser.parse_args()
 
 == 6.5. Metodologia eksperymentów
 
-Przeprowadzone eksperymenty miały na celu ocenę skuteczności opracowanego modelu GAN w rekonstrukcji nagrań dźwiękowych, ze szczególnym uwzględnieniem usuwania szumów charakterystycznych dla płyt winylowych. Głównym celem było zbadanie zdolności modelu do generowania wysokiej jakości sygnałów audio przy jednoczesnym zachowaniu oryginalnej struktury muzycznej.
+Przeprowadzone eksperymenty miały na celu ocenę skuteczności opracowanego modelu GAN w rekonstrukcji nagrań dźwiękowych, ze szczególnym uwzględnieniem usuwania szumów charakterystycznych dla płyt winylowych. Głównym celem było zbadanie zdolności modelu do odwzorowania oryginalnych sygnałów audio poprzez poprawę jakości oraz usunięcie artefaktów z próbek.
 
 Opis przeprowadzonych eksperymentów:
 
 1. Trening modelu na zbiorze danych zawierającym pary nagrań: oryginalne (czyste) oraz z dodanymi szumami winylowymi.
-2. Walidacja modelu na oddzielnym zbiorze danych, niewidzianym podczas treningu.
+2. Walidacja modelu na oddzielnym zbiorze danych, niedostępnym podczas treningu.
 3. Generowanie rekonstrukcji dla wybranych próbek testowych i analiza wyników.
 
 Metody ewaluacji obejmowały obiektywne metryki jakości audio oraz walidację na oddzielnym zbiorze danych:
@@ -1287,44 +1245,16 @@ Metody ewaluacji obejmowały obiektywne metryki jakości audio oraz walidację n
    - Wykorzystano cross-walidację, dzieląc zbiór danych na część treningową i walidacyjną.
    - Monitorowano straty walidacyjne w trakcie treningu, aby uniknąć przeuczenia.
 
-Ze względu na niepowodzenie badania, subiektywna ocena przez odsłuch nie była możliwa. W normalnych warunkach proces ten obejmowałby:
-- Panel ekspertów oceniających jakość rekonstrukcji.
+Ze względu na *niepowodzenie badania*, subiektywna *ocena przez odsłuch nie była możliwa*. W normalnych warunkach proces ten obejmowałby:
+- Próbkę badaczy z możliwie różnych kohort oceniających jakość rekonstrukcji.
 - Ślepe testy AB porównujące oryginalne nagrania z rekonstrukcjami.
 - Ocenę parametrów takich jak czystość dźwięku, zachowanie detali muzycznych i ogólna jakość.
 
-Porównanie różnych wariantów modelu i konfiguracji hiperparametrów:
+W ramach badań przeprowadzono eksperymenty mające na celu optymalizację architektury i hiperparametrów modelu GAN. W przypadku generatora, testowano różne konfiguracje sieci, modyfikując liczbę i rozmiar warstw konwolucyjnych oraz eksperymentując z różnymi typami bloków rezydualnych. Podobne modyfikacje wprowadzano w architekturze dyskryminatora, gdzie zweryfikowano wpływ głębokości sieci na jakość wyników oraz efektywność różnych technik normalizacji, ze szczególnym uwzględnieniem normalizacji spektralnej. Proces optymalizacji obejmował również dostrajanie kluczowych hiperparametrów, takich jak współczynniki uczenia się dla generatora i dyskryminatora. Badano także wpływ rozmiaru batcha oraz liczby kroków akumulacji gradientu na stabilność i efektywność procesu uczenia. Celem tych kompleksowych eksperymentów było znalezienie optymalnej konfiguracji modelu, zapewniającej najlepsze wyniki w zadaniu rekonstrukcji nagrań audio przy jednoczesnym zachowaniu stabilności treningu i efektywności obliczeniowej.
 
-1. Testowano różne architektury generatora:
-   - Zmiany w liczbie i rozmiarze warstw konwolucyjnych.
-   - Eksperymentowanie z różnymi typami bloków rezydualnych.
+W ramach analizy wpływu poszczególnych komponentów na jakość rekonstrukcji, przeprowadzono badania ukierunkowane na różne aspekty modelu. W obszarze funkcji strat dokonano eksperymentów dotyczących wpływu różnych wag przypisanych poszczególnym komponentom oraz analizie efektywności funkcji takich jak spectral flatness loss czy phase-aware loss. Zweryfikowano także skuteczność różnych technik normalizacji, w tym batch normalization i instance normalization w generatorze.
 
-2. Modyfikacje w architekturze dyskryminatora:
-   - Testowanie różnych głębokości sieci.
-   - Eksperymentowanie z technikami normalizacji (np. spectral normalization).
-
-3. Optymalizacja hiperparametrów:
-   - Testowanie różnych współczynników uczenia dla generatora i dyskryminatora.
-   - Eksperymentowanie z różnymi rozmiarami batcha i liczbą kroków akumulacji gradientu.
-
-Analiza wpływu poszczególnych komponentów na jakość rekonstrukcji:
-
-1. Funkcje strat:
-   - Badanie wpływu różnych wag dla poszczególnych komponentów funkcji straty.
-   - Analiza efektywności nowych funkcji strat, takich jak spectral flatness loss czy phase-aware loss.
-
-2. Techniki normalizacji:
-   - Porównanie efektywności batch normalization i instance normalization w generatorze.
-   - Badanie wpływu spectral normalization na stabilność treningu dyskryminatora.
-
-3. Augmentacja danych:
-   - Analiza wpływu różnych poziomów szumu winylowego na jakość rekonstrukcji.
-   - Badanie efektywności technik augmentacji, takich jak pitch shifting czy time stretching.
-
-4. Mechanizmy regularyzacji:
-   - Ocena wpływu gradient penalty na stabilność treningu GAN.
-   - Analiza efektywności techniki instance noise w zapobieganiu zapadaniu się modelu.
-
-Wyniki eksperymentów były analizowane poprzez wizualizację spektrogramów STFT, monitorowanie krzywych uczenia oraz analizę statystyczną metryk obiektywnych. Mimo że badanie nie przyniosło oczekiwanych rezultatów w zakresie jakości rekonstrukcji audio, dostarczyło cennych informacji na temat zachowania modelu GAN w kontekście przetwarzania sygnałów dźwiękowych oraz wskazało potencjalne kierunki dalszych badań i ulepszeń.
+Wyniki eksperymentów były analizowane poprzez wizualizację spektrogramów STFT, monitorowanie krzywych między epokami, oraz analizę metryk algorytmu podczas procesu uczenia. Mimo że badanie nie przyniosło oczekiwanych rezultatów w zakresie jakości rekonstrukcji audio, dostarczyło cennych informacji na temat zachowania modelu GAN w kontekście przetwarzania sygnałów dźwiękowych oraz wskazało potencjalne kierunki dalszych badań i ulepszeń.
 
 #pagebreak(weak: true)
 
