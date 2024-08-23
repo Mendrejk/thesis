@@ -1,338 +1,312 @@
 first-recorded-sound:
-  type: Article
-  title: What Was the First Sound Ever Recorded by a Machine?
-  date: 2024-08-19
-  url: https://time.com/5084599/first-recorded-sound/
-  parent:
-    title: time.com
+  type: Book
+  title: "Always Already New: Media, History, and the Data of Culture"
+  date: 2006
+  author: Gitelman, Lisa
 
 edison-phonograph:
   type: Article
-  title: The Edison Phonograph
-  date: 2024-08-19
-  url: https://en.wikipedia.org/wiki/Edison_Phonograph # TODO - url is not working
+  title: "Sound in silence: design and listening cultures in the Woodberry Poetry Room"
+  date: 2018
+  author: Touloumi, O.
   parent:
-    title: Wikipedia
+    title: The Journal of Architecture
 
 sound-recording-history:
-  type: Article
-  title: Sound recording and reproduction
-  date: 2024-08-19
-  url: https://en.wikipedia.org/wiki/Sound_recording_and_reproduction
+  type: Book
+  title: "Music Technology in Education – Channeling and Challenging Perspectives"
+  date: 2020-10-14
+  author: ["Eiksund, Ø.J.", "Angelo, E.", "Knigge, J.", "Gullö, J.-O.", "Askerøi, E.", "Støckert, R.", "Bergsland, A.", "Xambó, A.", "Nguyen, T.", "Øien, O.B.", "Røshol, A.W.", "Sørbø, E.", "Reistadbakk, E.", "Bandlien, B.-T."]
   parent:
-    title: Wikipedia
+    title: Cappelen Damm Forskning
 
 berliner-gramophone:
   type: Article
-  title: Emile Berliner
-  date: 2024-08-19
-  url: https://en.wikipedia.org/wiki/Emile_Berliner
+  title: "The First Jazz Gramophone Record: The Music of the Moment That Became Timeless"
+  date: 2021-02-16
+  author: ["Vyacheslavovich, R.V."]
   parent:
-    title: Wikipedia
+    title: "Department of Theory and History of Music, Moscow State Insitute of Culture"
 
 electrical-recording:
   type: Article
-  title: Electrical recording
-  date: 2024-08-19
-  url: https://en.wikipedia.org/wiki/Electrical_recording
+  title: Sound Recording as a Factor of Evolution of the Piano Performing Style in the 20th Century
+  author: Chvanova, T.P.
+  date: 2021-07-16
   parent:
-    title: Wikipedia
+    title: conservatory.ru
 
 lp-record:
-  type: Article
-  title: LP record
-  date: 2024-08-19
-  url: https://en.wikipedia.org/wiki/LP_record
+  type: Book
+  title: "Vinyl: A History of the Analogue Record"
+  date: 2013-10-25
+  autor: Fleiner, C.
   parent:
-    title: Wikipedia
+    title: Taylor & Francis Online
 
 compact-cassette:
   type: Article
-  title: Cassette tape
-  date: 2024-08-19
-  url: https://en.wikipedia.org/wiki/Compact_Cassette
+  title: Auditory demonstrations on compact disc
+  date: 2005-08-13
+  author: ["Houtsma, A. J.M.", "Rossing, T.D.", "Wagenaars, W.M."]
   parent:
-    title: Wikipedia
+    title: Acoustical Society of America
 
 cd-introduction:
   type: Article
-  title: Compact disc
-  date: 2024-08-19
-  url: https://en.wikipedia.org/wiki/Compact_disc
+  title: "From Reproduction to Performance: Media-Specific Music for Compact Disc"
+  date: 2009-12-01
+  author: Straebel, V.
   parent:
-    title: Wikipedia
+    title: Massachusetts Institute of Technology
 
 early-recording-limitations:
   type: Article
-  title: Early recording formats
-  date: 2024-08-19
-  url: https://en.wikipedia.org/wiki/Early_recording_formats # TODO - url is not working
+  title: Micromagnetic Simulation of L10-FePt-Based Transition Jitter of Heat-Assisted Magnetic Recording at Ultrahigh Areal Density 
+  date: 2022-09-20
+  author: ["Jongjaihan, C.", "Kaewrawang, A."]
   parent:
-    title: Wikipedia
+    title: MDPI
 
 music-accessibility:
-  type: Article
-  title: Music accessibility
-  date: 2024-08-19
-  url: https://en.wikipedia.org/wiki/Music_accessibility # TODO - url is not working
+  type: Book
+  title: The Accessibility of Music
+  date: 2013-02
+  author: Eisentraut, J.
   parent:
-    title: Wikipedia
-
-audio-restoration-challenges:
-  type: Article
-  title: Audio restoration
-  date: 2024-08-19
-  url: https://en.wikipedia.org/wiki/Audio_restoration
-  parent:
-    title: Wikipedia
+    title: University of Wales, Bangor
 
 audio-bandwidth-history:
   type: Article
-  title: Audio bandwidth
-  date: 2024-08-19
-  url: https://en.wikipedia.org/wiki/Audio_bandwidth # TODO - url is not working
+  title: Bandwidth Extension of Musical Audio Signals With No Side Information Using Dilated Convolutional Neural Networks
+  date: 2020-04-09
+  author: ["Lagrange, M.", "Gontier, F."]
   parent:
-    title: Wikipedia
+    title: IEEE
 
 noise-in-early-recordings:
   type: Article
-  title: Noise in early recordings
-  date: 2024-08-19
-  url: https://en.wikipedia.org/wiki/Noise_in_early_recordings # TODO - url is not working
+  title: "Hearing the Opera: “Teahouse Mimesis” and the Aesthetics of Noise in Early Jingju Recordings, 1890s—1910s "
+  date: 2017-07
+  author: ["Peng, X."]
   parent:
-    title: Wikipedia
+    title: University of Hawai'i Press
 
 analog-media-degradation:
   type: Article
-  title: Analog recording
-  date: 2024-08-19
-  url: https://en.wikipedia.org/wiki/Analog_recording # TODO - to nie jest najlepsze źródło
+  title: Artificial Intelligence and the Preservation of Historic Documents
+  date: 2022
+  author: Barlindhaug, G.
   parent:
-    title: Wikipedia
-
-storage-conditions-impact:
-  type: Article
-  title: Storage conditions
-  date: 2024-08-19
-  url: https://en.wikipedia.org/wiki/Storage_conditions # TODO - url is not working
-  parent:
-    title: Wikipedia
+    title: University of Tromsø
 
 print-through-effect:
   type: Article
-  title: Print-through
-  date: 2024-08-19
-  url: https://en.wikipedia.org/wiki/Print-through
+  title: Remanence loss in γ-Fe2O3tapes as related to reptation, viscosity, and print-through
+  date: 2003-01-06
+  author: Flanders, P.
   parent:
-    title: Wikipedia
+    title: IEEE
 
 brahms-recording:
   type: Article
-  title: Johannes Brahms
-  date: 2024-08-19
-  url: https://en.wikipedia.org/wiki/Johannes_Brahms
+  title: Brahms’s Hungarian Dances and the Early ‘Csárdás’ Recordings
+  date: 2021-07-19
+  author: Banks, J.
   parent:
-    title: Wikipedia
+    title: Oxford University Press
 
 early-blues-recordings:
-  type: Article
-  title: Blues
-  date: 2024-08-19
-  url: https://en.wikipedwia.org/wiki/Blues
+  type: Book
+  title: "18 11-, 12-, and 13½-Bar Blues: Time and African American Country Blues Recordings (1925–1938) "
+  date: 2021-12-08
+  author: Bowsher, A.
   parent:
-    title: Wikipedia
+    title: The Oxford Handbook of Time in Music
 
 playback-equipment-challenges:
   type: Article
-  title: Playback equipment
-  date: 2024-08-19
-  url: https://en.wikipedia.org/wiki/Playback_equipment # TODO - url is not working
+  title: "Sounds like a broken record: preservation and access of audio-visual records at the South African broadcasting corporation radio"
+  date: 2021-06-21
+  author: ["Ngoasheng, C.", "Ngoepe, M.", "Marutha, N.S."]
   parent:
-    title: Wikipedia
+    title: University of South Africa\
 
 music-digitization-challenges:
   type: Article
-  title: Music digitization
-  date: 2024-08-19
-  url: https://en.wikipedia.org/wiki/Music_digitization # TODO - url is not working
+  title: "Digitization of music and audio-visual industries in Brazil: new actors and the challenges to cultural diversity"
+  date: 2018
+  author: ["De Marchi, L.", "Ladeira, J.M."]
   parent:
-    title: Wikipedia
+    title: Les Cahiers d’Outre-Mer
 
 preservation-storage-requirements:
   type: Article
-  title: Preservation (library and archival science)
-  date: 2024-08-19
-  url: https://en.wikipedia.org/wiki/Preservation_(library_and_archival_science)
+  title: Impact of ICT on archival practice from the 2000s onwards and the necessary changes of archival science curricula
+  date: 2017-07-13
+  author: ["Stančić, H.", "Rajh, A.", "Jamić, M."]
   parent:
-    title: Wikipedia
+    title: University of Zagreb
 
 ethical-considerations-in-audio-restoration:
   type: Article
-  title: Audio restoration
-  date: 2024-08-19
-  url: https://en.wikipedia.org/wiki/Audio_restoration # TODO - to nie jest najlepsze źródło
+  title: "The Magnetic Urtext: Restoration as Music Interpretation"
+  date: 2022-04-20
+  author: ["Canazza, S.", "Schubert, E.", "Chmiel, A.", "Pretto, N.", "Rodà, A."]
   parent:
-    title: Wikipedia
+    title: Frontiers in Psychology
 
 ai-in-audio-restoration:
   type: Article
-  title: Audio restoration
-  date: 2024-08-19
-  url: https://en.wikipedia.org/wiki/Audio_restoration # TODO - to nie jest najlepsze źródło
+  title: Audio Denoising using Encoder-Decoder Deep Neural Network in the Case of HF Radio
+  date: 2024-04-22
+  author: ["Čubrilović, S.", "Kuzmanović, Z.", "Kvaščev, G."]
   parent:
-    title: Wikipedia
+    title: The Department of Signals and Systems, School of Electrical Engineering, Belgrade, Serbia
 
 cultural-value-of-music-archives:
   type: Article
-  title: Music archive
-  date: 2024-08-19
-  url: https://en.wikipedia.org/wiki/Music_archive # TODO - to nie jest najlepsze źródło
+  title: "Sounds of History: A Digital Twin Approach to Musical Heritage Preservation in Virtual Museums"
+  date: 2024-04-03
+  author: ["Zou, C.", "Rhee, S.", "Lin, H.", "Chen, D.", "Yang, X."]
   parent:
-    title: Wikipedia
+    title: MDPI
 
 preservation-of-audio-heritage:
   type: Article
-  title: Audio preservation
-  date: 2024-08-19
-  url: https://en.wikipedia.org/wiki/Audio_preservation # TODO - url is not working
+  title: "Non-Standard Track Configuration in Historical Audio Recordings: Technical and Philological Consequences for Preservation"
+  date: 2020
+  author: ["Bressan, F.", "Hess, R.L."]
   parent:
-    title: Wikipedia
+    title: Fontes Artis Musicae
 
 historical-performance-practice:
   type: Article
-  title: Historically informed performance
-  date: 2024-08-19
-  url: https://en.wikipedia.org/wiki/Historically_informed_performance
+  title: "Exploring the interpretation techniques in Bach’s Cello Suite No. 1 Prelude: A theoretical and practical approach to baroque performance practice"
+  date: 2024
+  author: ["Nurmusabih, N.A.", "Naufal, A.D."]
   parent:
-    title: Wikipedia
+    title: Indonesian Jorunal of Music Research, Development and Technology
 
 musicological-research-methods:
   type: Article
-  title: Musicology
-  date: 2024-08-19
-  url: https://en.wikipedia.org/wiki/Musicology
+  title: " Quantitative Method as a Tool in Musicological Interdisciplinary Research of Musical Rhetoric "
+  date: 2024-06-17
+  author: ["Kowal, M.", "Woźniak, M."]
   parent:
-    title: Wikipedia
+    title: Interdisciplinary Studies in Musicology
 
 performance-practice-evolution:
   type: Article
-  title: Performance practice
-  date: 2024-08-19
-  url: https://en.wikipedia.org/wiki/Performance_practice
+  title: Integrating Mobile Music with Percussion Performance Practice
+  date: 2013
+  author: Martin, C.
   parent:
-    title: Wikipedia
+    title: dblp
 
 composer-performances:
   type: Article
-  title: Composer
-  date: 2024-08-19
-  url: https://en.wikipedia.org/wiki/Composer # TODO - nie najlepsze źródło
+  title: "What Else Can Grieg's Historical Recordings Tell Us?"
+  date: 2020-11-02
+  author: Mattes, A.C.
   parent:
-    title: Wikipedia
+    title: Studia Musicologica Norvegica
 
 music-audio-quality-perception:
   type: Article
-  title: Audio quality measurement
-  date: 2024-08-19
-  url: https://en.wikipedia.org/wiki/Audio_quality_measurement # TODO - złe źródło - tekst mówi "badania wskazują"
+  title: "Muddy, muddled, or muffled? Understanding the perception of audio quality in music by hearing aid users"
+  date: 2024-02-21
+  author: ["Bannister, S.", "Greasley, A.E.", "Cox, T.J.", "Akeroyd, M.A.", "Barker, J.", "Fazenda, B.", "Firth, J.", "Graetzer, S.N.", "Dabike, G.R.", "Vos, R.R.", "Whitmer, W.M."]
   parent:
-    title: Wikipedia
+    title: Sec. Auditory Cognitive Neuroscience, Frontiers in Psychology
 
 rediscovery-of-forgotten-music:
   type: Article
-  title: Rediscovery
-  date: 2024-08-19
-  url: https://en.wikipedia.org/wiki/Rediscovery # TODO - złe źródło
+  title: " Zeybeks in Greek music culture in Türkiye: the example of Imroz-Gokceada "
+  date: 2024-06-30
+  author: ["İnce, K.S.", "Madzhıdov, M.", "Turhan, H.E."]
   parent:
-    title: Wikipedia
+    title: dergipark
 
 nuance-in-restored-recordings:
   type: Article
-  title: Audio restoration
-  date: 2024-08-19
-  url: https://en.wikipedia.org/wiki/Audio_restoration # TODO - to nie jest najlepsze źródło
+  title: "SelfRemaster: Self-Supervised Speech Restoration for Historical Audio Resources"
+  date: 2023
+  author: ["Saeki, T.", "Takamichi, S.", "Nakamura, T.", "Tanji, N.", "Saruwatari, H."]
   parent:
-    title: Wikipedia
+    title: IEEE
 
 remastered-recordings-market:
   type: Article
-  title: Remaster
-  date: 2024-08-19
-  url: https://en.wikipedia.org/wiki/Remaster
+  title: "Revenue, access, and engagement via the in-house curated Spotify playlist in Australia"
+  date: 2018-12-12
+  author: Morgan, B.A.
   parent:
-    title: Wikipedia
+    title: Taylor & Francis Online
 
 classical-music-reissues:
   type: Article
-  title: Classical music
-  date: 2024-08-19
-  url: https://en.wikipedia.org/wiki/Classical_music # TODO - nie najlepsze źródło
+  title: "Remixing Multimovement Works, Classical Music Concept Albums, and Twenty-First-Century Pianists’ Interpretations of the Canon "
+  date: 2023-07-01
+  author: Stefaniak, A.
   parent:
-    title: Wikipediacv
-
-revenue-from-restored-recordings:
-  type: Article
-  title: Music industry
-  date: 2024-08-19
-  url: https://en.wikipedia.org/wiki/Music_industry # TODO - nie najlepsze źródło
-  parent:
-    title: Wikipedia
+    title: Washington University in Saint Louis
 
 future-of-audio-restoration:
   type: Article
-  title: Audio restoration
-  date: 2024-08-19
-  url: https://en.wikipedia.org/wiki/Audio_restoration # TODO - to nie jest najlepsze źródło
+  title: "OPEN SOURCE AND PROPRIETARY SOFTWARE FOR AUDIO DEEPFAKES AND VOICE CLONING: GROWTH AREAS, PAIN POINTS, FUTURE INFLUENCE"
+  date: 2024-04-18
+  author: Danylov, V.
   parent:
-    title: Wikipedia
+    title: Baltija Publishing
 
 noise-reduction-techniques:
   type: Article
-  title: Noise reduction
-  date: 2024-08-19
-  url: https://en.wikipedia.org/wiki/Noise_reduction
+  title: High-Fidelity Noise Reduction with Differentiable Signal Processing
+  date: 2023-10-17
+  author: ["Steinmetz, C.J.", "Walther, T.", "Reiss, J.D."]
   parent:
-    title: Wikipedia
+    title: arXiv
 
 bandwidth-extension-methods:
   type: Article
-  title: Bandwidth extension
-  date: 2024-08-19
-  url: https://en.wikipedia.org/wiki/Bandwidth_extension
+  title: "Bandwidth Extension is All You Need"
+  date: 2021-05-13
+  author: ["Su, J.", "Wang, Y.", "Finkelstein, A.", "Jin, Z."]
   parent:
-    title: Wikipedia
+    title: IEEE
 
 audio-inpainting-techniques:
   type: Article
-  title: Audio inpainting
-  date: 2024-08-19
-  url: https://en.wikipedia.org/wiki/Audio_inpainting
+  title: "Deep Prior-Based Audio Inpainting Using Multi-Resolution Harmonic Convolutional Neural Networks"
+  date: 2023-10-16
+  author: ["Miotello, F.", "Pezzoli, M.", "Comanducci, L.", "Antonacci, F.", "Sarti, A."]
   parent:
-    title: Wikipedia
+    title: IEEE
 
 gan-in-audio-processing:
   type: Article
-  title: Generative adversarial network
-  date: 2024-08-19
-  url: https://en.wikipedia.org/wiki/Generative_adversarial_network # TODO - to nie jest najlepsze źródło
+  title: "Robust Real-time Audio-Visual Speech Enhancement based on DNN and GAN"
+  date: 2024-02-15
+  author: ["Gogate, M.", "Dashtipour, K.", "Hussain, A."]
   parent:
-    title: Wikipedia
+    title: IEEE
 
 gan-image-restoration:
   type: Article
-  title: Generative adversarial network
-  date: 2024-08-19
-  url: https://en.wikipedia.org/wiki/Generative_adversarial_network # TODO - to nie jest najlepsze źródło
+  title: "Generative Adversarial Networks (GANs) for Audio-Visual Speech Recognition in Artificial Intelligence IoT "
+  date: 2023-09-09
+  author: ["He, Y.", "Seng, K.P.", "Ang, L.M."]
   parent:
-    title: Wikipedia
+    title: mdpi
 
 audio-quality-perception:
   type: Article
-  title: Audio quality measurement
-  date: 2024-08-19
-  url: https://en.wikipedia.org/wiki/Audio_quality_measurement # TODO - złe źródło
+  title: Perception of Audio Quality in Productions of Popular Music
+  date: 2016-01-06
+  author: ["Wilson, A.", "Fazenda, B.M."]
   parent:
-    title: Wikipedia
+    title: Acoustics Research Centre, University of Salford, Greater Manchester, UK
 
 1:
   type: Thesis
@@ -568,3 +542,27 @@ vggish:
   date: 2024-08-19
   parent:
     title: "github.com"
+
+remastering-education:
+  type: Article
+  author: ["Carfoot, G.", "Willsteed, J.", "Arthurs, A."]
+  title: "Nostalgia, authenticity and the culture and practice of remastering music"
+  date: 2019-06-19
+  parent:
+    title: "Queensland University of Technology"
+
+ai-remastering-ethics:
+  type: Article
+  author: ["Mehta, K.", "Thakur, S."]
+  title: "Artistic Renaissance: Harnessing Artificial Intelligence for Cultural Restoration"
+  date: 2022-01
+  parent:
+    title: "International Journal of Advanced Research in Science, Communication and Technology"
+
+historical-remastering-challenges:
+  type: Article
+  author: ["Bressan, F.", "Hess, R.L."]
+  title: "Non-Standard Track Configuration in Historical Audio Recordings: Technical and Philological Consequences for Preservation"
+  date: 2020
+  parent:
+    title: "Fontes Artis Musicae"
