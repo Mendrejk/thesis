@@ -1,3 +1,18 @@
+#set page(margin: (
+  top: 0cm,
+  bottom: 0cm,
+  x: 0cm,
+))
+
+#image("pd_mgr_pl.docx.svg")
+
+#set page(margin: (
+  top: 2.5cm,
+  bottom: 2.5cm,
+  x: 2.5cm,
+))
+
+
 // #set text(font: "Montserrat")
 #set text(
   font: "Satoshi",
@@ -261,6 +276,7 @@ Niektóre modele, szczególnie te oparte na sieciach konwolucyjnych, mogą praco
 
 Wybór odpowiedniej reprezentacji zależy od specyfiki zadania oraz architektury modelu. Coraz częściej stosuje się też podejścia hybrydowe, łączące różne reprezentacje w celu uzyskania lepszych wyników.
 
+#pagebreak(weak: true)
 Techniki uczenia maszynowego oferują szerokie spektrum możliwości w dziedzinie przetwarzania i poprawy jakości sygnałów audio. Ewolucja tych metod, od prostych modeli statystycznych po zaawansowane sieci generatywne, umożliwia rozwiązywanie coraz bardziej złożonych problemów związanych z rekonstrukcją i poprawą jakości nagrań dźwiękowych. W kontekście przetwarzania sygnałów audio kluczowe znaczenie ma odpowiedni dobór podejścia (nadzorowane, nienadzorowane lub półnadzorowane) oraz reprezentacji dźwięku. Właściwe decyzje w tym zakresie pozwalają na optymalne wykorzystanie potencjału uczenia maszynowego, co przekłada się na skuteczność i efektywność opracowywanych rozwiązań. Postęp w tej dziedzinie otwiera nowe możliwości w zakresie zachowania i odtwarzania dziedzictwa kulturowego, jakim są historyczne nagrania dźwiękowe.
 
 
@@ -299,11 +315,12 @@ Autoenkodery to fascynująca klasa sieci neuronowych, której głównym zadaniem
 
 Klasyczny autoenkoder składa się z enkodera, który "ściska" dane wejściowe do niższego wymiaru, oraz dekodera, który próbuje odtworzyć oryginalne dane z tej skompresowanej reprezentacji. W zastosowaniach audio, autoenkodery mogą nauczyć się reprezentacji, które zachowują kluczowe cechy dźwięku, jednocześnie eliminując szum czy niepożądane artefakty.
 
+#pagebreak(weak: true)
 Wariacyjne autoenkodery (VAE) idą o krok dalej, wprowadzając element losowości do procesu kodowania. Ta cecha czyni je szczególnie przydatnymi w generowaniu nowych, unikalnych dźwięków, zachowujących charakterystykę danych treningowych. VAE znalazły zastosowanie m.in. w syntezie mowy i efektów dźwiękowych.
 
 Splotowe autoenkodery (CAE) łączą zalety autoenkoderów i CNN, co czyni je skutecznymi w zadaniach związanych z przetwarzaniem spektrogramów. Ich zdolność do wyodrębniania lokalnych cech spektralnych przy jednoczesnej redukcji wymiarowości sprawia, że są cennym narzędziem w odszumianiu i restauracji nagrań audio.
 
-#pagebreak(weak: true)
+#linebreak()
 == Generatywne sieci przeciwstawne (GAN) w kontekście audio
 
 Generatywne sieci przeciwstawne (GAN) to innowacyjna architektura uczenia maszynowego, która zrewolucjonizowała podejście do generacji i przetwarzania danych, w tym sygnałów audio. Podstawowa idea GAN opiera się na "rywalizacji" dwóch sieci neuronowych: generatora, który tworzy nowe dane, oraz dyskryminatora, który ocenia ich autentyczność. Ta koncepcja, początkowo opracowana dla obrazów, została z powodzeniem zaadaptowana do domeny audio, otwierając nowe możliwości w syntezie i manipulacji dźwiękiem.
@@ -477,6 +494,7 @@ Zastosowania Conditional GAN w rekonstrukcji nagrań obejmują m.in. rozszerzeni
 
 CycleGAN jest modelem generatywnym, który umożliwia uczenie się transformacji między różnymi domenami danych bez potrzeby posiadania sparowanych próbek treningowych. W przeciwieństwie do tradycyjnych metod nadzorowanych, CycleGAN wykorzystuje mechanizm dwóch cykli generacyjnych (cykl do przodu i cykl do tyłu), co pozwala na uczenie bez nadzoru. Główna idea tego podejścia polega na tym, że model uczy się odwzorowywać dane z jednej domeny na drugą w taki sposób, aby możliwe było odzyskanie oryginalnych danych przy odwrotnym procesie transformacji.
 
+#pagebreak(weak: true)
 CycleGAN znalazł szerokie zastosowanie w transferze stylu audio i konwersji głosu. Dzięki zdolności do uczenia się z danych nieparowanych, model ten jest wykorzystywany do zmiany stylu muzycznego utworów czy konwersji głosu pomiędzy różnymi mówcami. CycleGAN został użyty w celu transformacji dźwięków silników okrętowych @27.
 
 CycleGAN oferuje ogromny potencjał w rekonstrukcji nagrań bez par treningowych. Dzięki swojej zdolności do pracy z nieparowanymi danymi, model ten może być używany do odtwarzania sygnałów dźwiękowych w przypadkach, gdy brak jest sparowanych próbek treningowych, co czyni go wyjątkowo użytecznym w rekonstrukcji historycznych nagrań lub innych złożonych zadań dźwiękowych @27.
@@ -767,6 +785,7 @@ Adversarial Loss (Hinge Loss): Funkcja ta stanowi podstawę treningu przeciwstaw
 
 Content Loss (L1 lub L2): Ta funkcja straty mierzy bezpośrednią różnicę między wygenerowanym sygnałem a sygnałem docelowym. Implementacja umożliwia wybór między normą L1 (średnia wartość bezwzględna różnic) a normą L2 (średnia kwadratowa różnic). Norma L1 jest często preferowana w zadaniach związanych z przetwarzaniem sygnałów, gdyż jest mniej wrażliwa na ekstremalne wartości.
 
+#pagebreak(weak: true)
 Spectral Convergence Loss: Funkcja ta mierzy podobieństwo widmowe między sygnałem wygenerowanym a docelowym. Jest szczególnie istotna w kontekście rekonstrukcji nagrań audio, gdyż koncentruje się na zachowaniu charakterystyki częstotliwościowej sygnału. Obliczana jest jako stosunek normy różnicy widm do normy widma oryginalnego.
 
 Spectral Flatness Loss: Ta funkcja straty ocenia różnicę w "płaskości" widmowej między sygnałem wygenerowanym a docelowym. Płaskość widmowa jest miarą tego, jak równomiernie rozłożona jest energia sygnału w dziedzinie częstotliwości. Jest szczególnie przydatna w zachowaniu ogólnej charakterystyki tonalnej rekonstruowanego dźwięku.
@@ -791,6 +810,7 @@ d_optimizer = optim.Adam(gan.discriminator.parameters(), lr=d_lr, betas=(0.0, 0.
 caption: "Parametry optymizatorów Adam"
 )
 
+#pagebreak(weak: true)
 Z powodu rozmiarów modelu oraz dużych plików treningowych, napotkano na problemy z rozmiarem batcha wynikające z przekroczenia limitu pamięci wirtualnej karty graficznej. Z tego powodu zastosowano technikę akumulacji gradientów, co pozwoliło na efektywne zwiększenie rozmiaru batcha bez zwiększania zużycia pamięci:
 
 #figure(
@@ -845,6 +865,7 @@ loss_visualization_callback.on_epoch_end(epoch, combined_losses)
 caption: "Metody wizualizacji strat"
 )
 
+#pagebreak(weak: true)
 Implementacja Early Stopping pozwoliła na automatyczne przerwanie treningu w przypadku braku poprawy wyników:
 
 #figure(
@@ -999,6 +1020,7 @@ Obserwacja funkcji strat w trakcie procesu uczenia stanowiła drugi istotny aspe
   )
 )
 
+#pagebreak(weak: true)
 Obserwacja tych wartości ujawnia interesującą tendencję. W początkowych fazach treningu widoczny jest znaczący spadek wartości funkcji straty, co sugeruje, że model uczył się efektywnie redukować błędy rekonstrukcji. Jednakże, około 14-16 epoki wartość funkcji straty osiągnęła minimum (około 44-45) i przestała znacząco spadać, utrzymując się na podobnym poziomie w kolejnych epokach.
 
 To zjawisko jest niepokojące, biorąc pod uwagę, że jakość rekonstrukcji audio pozostawała niezadowalająca. Sugeruje to, że model osiągnął *minimum lokalne*, które nie odpowiadało satysfakcjonującemu rozwiązaniu problemu rekonstrukcji. Innymi słowy, funkcja straty przestała dostarczać użytecznych informacji dla dalszej optymalizacji modelu, mimo że nie był on jeszcze w stanie generować wysokiej jakości rekonstrukcji audio.
@@ -1081,6 +1103,7 @@ W domenie audio napotkano specyficzne problemy, które nie występują lub są m
 
 Poważnym ograniczeniem okazały się również kwestie sprzętowe i obliczeniowe. Wykorzystywana w badaniach karta graficzna Radeon 6950 XTX z 16 GB pamięci VRAM, mimo swoich wysokich parametrów, wielokrotnie okazywała się niewystarczająca do efektywnego treningu modelu na pełnym zbiorze danych. Problemy z brakiem pamięci wirtualnej wymuszały ograniczenie rozmiaru batchy lub stosowanie technik takich jak akumulacja gradientów, co z kolei wpływało na stabilność i efektywność procesu uczenia. Długi czas treningu, sięgający kilkudziesięciu godzin na pełny proces, znacząco ograniczał możliwości eksperymentowania z różnymi konfiguracjami modelu i hiperparametrami.
 
+#pagebreak(weak: true)
 Dodatkowym wyzwaniem okazała się interpretacja wyników pośrednich. Mimo obserwowanych popraw w reprezentacjach częstotliwościowych (spektrogramach), przekładanie tych ulepszeń na percepcyjną jakość dźwięku okazało się nieoczywiste. Sugeruje to, że stosowane funkcje straty mogły nie w pełni odzwierciedlać aspekty istotne dla ludzkiej percepcji dźwięku.
 
 Wreszcie, należy zwrócić uwagę na ograniczenia wynikające z samej natury podejścia opartego na uczeniu maszynowym. Model, ucząc się na podstawie dostarczonych przykładów, mógł mieć trudności z rekonstrukcją rzadkich lub unikalnych elementów muzycznych, które nie były dobrze reprezentowane w zbiorze treningowym.
@@ -1097,9 +1120,10 @@ Alternatywnym podejściem wartym eksploracji są modele dyfuzyjne, które w osta
 
 Istotnym kierunkiem badań powinna być także głębsza integracja wiedzy dziedzinowej z zakresu przetwarzania sygnałów audio w procesie uczenia maszynowego. Można by rozważyć opracowanie specjalizowanych warstw sieciowych, które explicite modelowałyby zjawiska akustyczne, takie jak propagacja fal dźwiękowych czy rezonans. Implementacja zaawansowanych technik analizy częstotliwościowej, takich jak transformata falkowa czy analiza cepstralna, bezpośrednio w architekturze sieci neuronowej mogłaby znacząco poprawić jej zdolność do precyzyjnej rekonstrukcji sygnałów muzycznych.
 
+#pagebreak(weak: true)
 Przyszłe badania powinny również rozszerzyć zakres eksperymentów o szerszy wachlarz gatunków muzycznych i typów nagrań. Szczególnie interesujące pozostaje badanie skuteczności modeli w rekonstrukcji nagrań wokalnych, muzyki elektronicznej czy zapisów koncertów na żywo.
 
-#pagebreak(weak: true)
+#linebreak()
 == Implikacje dla przyszłości rekonstrukcji nagrań muzycznych
 
 Rozwój technik opartych na sztucznej inteligencji w dziedzinie rekonstrukcji nagrań muzycznych niesie ze sobą znaczące implikacje dla ochrony dziedzictwa kulturowego. Potencjał AI w tym kontekście jest ogromny – zaawansowane algorytmy mogą nie tylko przywrócić do życia historyczne nagrania, ale także uczynić je dostępnymi dla szerszej publiczności w niespotykanej dotąd jakości. Możliwość automatycznej poprawy jakości tysięcy godzin archiwalnych nagrań otwiera nowe perspektywy dla badaczy, muzykologów i miłośników muzyki, umożliwiając głębsze zrozumienie i docenienie muzycznego dziedzictwa ludzkości.
@@ -1110,6 +1134,7 @@ Patrząc w przyszłość, można prognozować dynamiczny rozwój technologii AI 
 
 Wpływ zaawansowanych technik rekonstrukcji na przemysł muzyczny i praktyki archiwizacyjne będzie najprawdopodobniej znaczący. Możemy oczekiwać rosnącego zainteresowania remasteringiem i ponownym wydawaniem historycznych nagrań w poprawionej jakości. To z kolei może wpłynąć na strategie wydawnicze i modele biznesowe w branży muzycznej. Dla archiwów i instytucji kulturalnych, nowe technologie rekonstrukcji mogą oznaczać rewolucję w sposobie przechowywania i udostępniania zbiorów audio, potencjalnie prowadząc do demokratyzacji dostępu do muzycznego dziedzictwa.
 
+#pagebreak(weak: true)
 Podsumowując, mimo że obecne badania nad wykorzystaniem AI w rekonstrukcji nagrań muzycznych napotkały pewne ograniczenia, perspektywy na przyszłość są niezwykle obiecujące. Dalszy rozwój w tej dziedzinie ma potencjał nie tylko do znaczącego postępu technologicznego, ale także do głębokiej transformacji naszego podejścia do zachowania i interpretacji muzycznego dziedzictwa. Kluczowe będzie zrównoważone podejście, które zmaksymalizuje korzyści płynące z nowych technologii, jednocześnie zachowując szacunek dla integralności i autentyczności historycznych nagrań.
 
 
